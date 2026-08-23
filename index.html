@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; form-action 'none'; base-uri 'none'">
+<title>Speaking Games — развитие спонтанной англоязычной речи</title>
+<style>
+:root{--bg:#17132b;--panel:#2b2450;--line:rgba(255,255,255,.10);--line2:rgba(255,255,255,.18);
+ --ink:#f4f1ff;--muted:#b9b0d8;--dim:#8d84ad;--orange:#f59e0b;--orange2:#fbbf24;
+ --green:#4ade80;--green2:#34d399;--lav:#a78bfa}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(1200px 800px at 50% -10%,#2a2250 0%,var(--bg) 70%);color:var(--ink);
+ min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+ -webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:26px 18px 70px}
+.brand{display:flex;align-items:center;gap:9px;font-size:12px;letter-spacing:.19em;text-transform:uppercase;
+ color:var(--lav);font-weight:700;margin-bottom:28px}
+.hero{text-align:center;padding:6px 0 30px}
+.hero h1{font-size:clamp(32px,6.5vw,60px);font-weight:800;letter-spacing:-.02em;line-height:1.02}
+.hero h1 .accent{color:var(--orange);font-style:italic;font-family:Georgia,serif}
+.hero p{color:var(--muted);font-style:italic;margin-top:14px;font-size:16.5px}
+.hero .meta{margin-top:14px;color:var(--dim);font-size:13px}
+
+/* вкладки */
+.tabs{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:30px;
+ background:rgba(255,255,255,.05);border:1px solid var(--line2);border-radius:999px;
+ padding:5px;width:fit-content;margin-left:auto;margin-right:auto}
+.tabs button{border:0;background:transparent;color:var(--muted);cursor:pointer;font-family:inherit;
+ font-size:14px;font-weight:700;padding:10px 22px;border-radius:999px;transition:background .15s}
+.tabs button:hover{color:var(--ink)}
+.tabs button.on{background:var(--lav);color:#1b1235}
+.pane{display:none} .pane.on{display:block;animation:fade .25s ease both}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+h2.sec{font-size:12px;letter-spacing:.19em;text-transform:uppercase;color:var(--orange);
+ font-weight:800;margin:38px 0 8px;display:flex;align-items:center;gap:11px}
+h2.sec:first-child{margin-top:0}
+h2.sec::after{content:'';flex:1;height:1px;background:var(--line)}
+p.note{color:var(--dim);font-size:13.5px;margin-bottom:18px;line-height:1.65;max-width:760px}
+
+.feature{display:flex;gap:24px;align-items:center;flex-wrap:wrap;
+ background:linear-gradient(150deg,#33265c 0%,#241e46 100%);border:1px solid rgba(167,139,250,.3);
+ border-radius:22px;padding:26px 28px;transition:transform .15s,border-color .15s}
+.feature:hover{transform:translateY(-3px);border-color:rgba(167,139,250,.6)}
+.feature .ic{font-size:50px;line-height:1} .feature .tx{flex:1;min-width:230px}
+.feature h3{font-size:24px;font-weight:780}
+.feature .sub{color:var(--lav);font-size:11.5px;text-transform:uppercase;letter-spacing:.09em;margin-top:6px;font-weight:700}
+.feature p{color:var(--muted);font-size:14.5px;margin-top:10px;line-height:1.55}
+.go{flex:none;background:linear-gradient(180deg,var(--green),var(--green2));color:#0d2b1d;
+ font-weight:700;font-size:15px;padding:13px 28px;border-radius:999px;white-space:nowrap}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(252px,1fr));gap:15px}
+.card{background:linear-gradient(160deg,var(--panel) 0%,#241e46 100%);border:1px solid var(--line);
+ border-radius:18px;padding:19px 18px 16px;position:relative;display:block;
+ transition:transform .15s,border-color .15s,box-shadow .15s}
+.card:hover{transform:translateY(-3px);border-color:rgba(167,139,250,.5);box-shadow:0 14px 32px rgba(0,0,0,.35)}
+.card .num{position:absolute;top:14px;right:16px;font-size:12px;color:var(--dim);font-weight:700}
+.card .ic{font-size:26px;margin-bottom:10px}
+.card h3{font-size:17.5px;font-weight:750}
+.card .sub{color:var(--dim);font-size:11px;margin-top:5px;text-transform:uppercase;letter-spacing:.07em}
+.card .sk{color:var(--muted);font-size:13px;margin-top:11px;line-height:1.45}
+.card .tm{margin-top:12px;display:inline-block;font-size:11.5px;color:var(--green);
+ background:rgba(74,222,128,.10);border:1px solid rgba(74,222,128,.28);padding:4px 10px;border-radius:999px;font-weight:700}
+.allbtn{display:inline-block;margin-top:22px;background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.4);
+ color:var(--orange2);font-weight:700;font-size:14px;padding:12px 26px;border-radius:999px}
+.allbtn:hover{filter:brightness(1.15)}
+
+/* методика */
+table.m{width:100%;border-collapse:collapse;font-size:14px;margin-bottom:8px}
+table.m th{text-align:left;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);
+ font-weight:800;padding:9px 12px;border-bottom:1px solid var(--line2)}
+table.m td{padding:12px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top;line-height:1.5}
+table.m td.g{color:var(--muted)}
+.crit{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.crit div{background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:15px;padding:17px 18px}
+.crit b{display:block;color:var(--orange2);font-size:14.5px;margin-bottom:7px}
+.crit span{color:var(--muted);font-size:13.3px;line-height:1.55}
+.prow{border-bottom:1px solid var(--line);padding:15px 0}
+.prow:last-child{border-bottom:0}
+.pn{font-size:14px;font-weight:750;color:var(--ink);margin-bottom:6px}
+.pq{font-size:13.4px;color:var(--muted);font-style:italic;line-height:1.6;
+ border-left:2px solid var(--orange);padding-left:13px}
+
+/* QR */
+.qrgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.qrcard{background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:16px;
+ padding:16px;text-align:center}
+.qrcard img{width:100%;max-width:190px;height:auto;image-rendering:pixelated;
+ background:#fff;border-radius:9px;padding:8px}
+.qt{font-size:14px;font-weight:750;margin-top:12px}
+.qn{font-size:11.5px;color:var(--dim);margin-top:4px;text-transform:uppercase;letter-spacing:.06em}
+.qrcard code{display:block;margin-top:9px;font-size:10.5px;color:var(--lav);word-break:break-all;line-height:1.4}
+
+.foot{margin-top:50px;padding-top:22px;border-top:1px solid var(--line);text-align:center;
+ color:var(--dim);font-size:12.5px;line-height:1.8}
+.foot b{color:var(--muted);font-weight:650}
+@media(max-width:560px){.wrap{padding:18px 13px 56px} .feature{padding:22px 18px} .tabs button{padding:9px 15px;font-size:13px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><span>✦</span> Спонтанная речь · ГУАП</div>
+
+  <div class="hero">
+    <h1>Speaking <span class="accent">Games</span></h1>
+    <p>Девять способов заставить студента сказать то, что он не планировал говорить.</p>
+    <div class="meta">Английский язык · B1—B2 · работает офлайн · без регистрации и установки</div>
+  </div>
+
+  <div class="tabs">
+    <button data-tab="games" class="on">Игры</button>
+    <button data-tab="method">Методика</button>
+    <button data-tab="qr">QR-коды</button>
+  </div>
+
+  <!-- ================= ИГРЫ ================= -->
+  <div class="pane on" id="games">
+    <h2 class="sec">Коммуникативно-сценарный модуль</h2>
+    <p class="note">Частично подготовленная полилогическая речь, асинхронный формат.
+       Каждый игрок тайно выбирает карточку; три прилагательных — единственная опора.</p>
+    <a class="feature" href="https://teachingislove2020-bit.github.io/word_port_game/word_portrait_game%20(4).html">
+      <div class="ic">🃏</div>
+      <div class="tx"><h3>Portrait Quiz Game</h3>
+        <div class="sub">визуальный + лексический · тайный выбор · 10 с · 60 с</div>
+        <p>Три слова — вот и вся опора. Минута речи о человеке, которого вы никогда не видели,
+           а группа должна догадаться, кто вам достался.</p></div>
+      <span class="go">Играть →</span>
+    </a>
+
+    <h2 class="sec">Task Lab — восемь заданий на стимульном материале</h2>
+    <p class="note">Построено на типологии стимулов и четырёх требованиях отбора. Каждое задание
+       занимает 5—7 минут аудиторного времени и завершается баллом от 1 до 5.</p>
+    <div class="grid">
+    <a class="card" href="task-lab/#emoji"><span class="num">01</span><div class="ic">🧩</div>
+      <h3>Emoji Story Sprint</h3><div class="sub">знаково-символический · зрительный</div>
+      <div class="sk">Удержание в оперативной памяти нескольких не связанных между собой опор; быстрое установление смысловых связей между удалёнными понятиями.</div><span class="tm">5 с · 20 с · 2 мин</span></a>
+    <a class="card" href="task-lab/#words"><span class="num">02</span><div class="ic">💥</div>
+      <h3>Word Explosion</h3><div class="sub">лексический · зрительный</div>
+      <div class="sk">Лексическая гибкость и перевод пассивного словаря в активный; соединение семантически далёких единиц в одном высказывании.</div><span class="tm">5 с · 90 с</span></a>
+    <a class="card" href="task-lab/#photo"><span class="num">03</span><div class="ic">🎭</div>
+      <h3>One Photo — Three Stories</h3><div class="sub">визуальный · зрительный</div>
+      <div class="sk">Смена коммуникативной позиции в рамках одного содержания; выбор регистра и оценочной лексики под коммуникативную роль.</div><span class="tm">15 с · 90 с</span></a>
+    <a class="card" href="task-lab/#sound"><span class="num">04</span><div class="ic">🔊</div>
+      <h3>Mystery Sound</h3><div class="sub">аудиальный · слуховой</div>
+      <div class="sk">Вероятностное прогнозирование и выдвижение гипотезы; модальность предположения; переход от монолога к спонтанному обмену репликами.</div><span class="tm">5–10 с · 60 с</span></a>
+    <a class="card" href="task-lab/#switch"><span class="num">05</span><div class="ic">🔀</div>
+      <h3>Picture Switch</h3><div class="sub">визуальный · зрительный</div>
+      <div class="sk">Когнитивная гибкость и переключение без потери связности; владение средствами межфразовой связи.</div><span class="tm">3–4 × 20 с</span></a>
+    <a class="card" href="task-lab/#twist"><span class="num">06</span><div class="ic">⚡</div>
+      <h3>Unexpected Ending</h3><div class="sub">ролевой и событийный · зрительный</div>
+      <div class="sk">Скорость речепорождения при разрушении исходного плана высказывания; толерантность к неопределённости.</div><span class="tm">3 мин · 60 с</span></a>
+    <a class="card" href="task-lab/#reverse"><span class="num">07</span><div class="ic">❓</div>
+      <h3>Reverse Interview</h3><div class="sub">ролевой и событийный · зрительный</div>
+      <div class="sk">Вопросно-ответное взаимодействие и инициатива в диалоге; грамматика вопроса, включая разделительные и косвенные формы.</div><span class="tm">40 с · 60 с</span></a>
+    <a class="card" href="task-lab/#emotion"><span class="num">08</span><div class="ic">🎚️</div>
+      <h3>Emotion Shift</h3><div class="sub">ролевой и событийный · зрительный</div>
+      <div class="sk">Прагматика высказывания и соответствие формы коммуникативному намерению; интонационное оформление и фразовое ударение.</div><span class="tm">4 × 25 с</span></a>
+    </div>
+    <div style="text-align:center"><a class="allbtn" href="task-lab/">Открыть Task Lab — все восемь на одном экране →</a></div>
+  </div>
+
+  <!-- ================= МЕТОДИКА ================= -->
+  <div class="pane" id="method">
+    <h2 class="sec">Типология стимулов</h2>
+    <p class="note">Пять типов по каналу восприятия. Комплекс покрывает все пять.</p>
+    <table class="m">
+      <tr><th>Тип стимула</th><th>Канал</th><th>Материал</th><th>Задания</th></tr>
+      <tr><td>Знаково-символический</td><td class="g">зрительный</td><td class="g">последовательности эмодзи</td><td class="g">Emoji Story Sprint</td></tr>
+      <tr><td>Лексический</td><td class="g">зрительный</td><td class="g">наборы не связанных слов</td><td class="g">Word Explosion</td></tr>
+      <tr><td>Визуальный</td><td class="g">зрительный</td><td class="g">изображение сцены</td><td class="g">One Photo — Three Stories, Picture Switch</td></tr>
+      <tr><td>Аудиальный</td><td class="g">слуховой</td><td class="g">описания звуковых сцен</td><td class="g">Mystery Sound</td></tr>
+      <tr><td>Ролевой и событийный</td><td class="g">зрительный</td><td class="g">карточки ролей, обстоятельств, реплик</td><td class="g">Unexpected Ending, Reverse Interview, Emotion Shift</td></tr>
+    </table>
+
+    <h2 class="sec">Четыре требования к отбору стимула</h2>
+    <div class="crit">
+      <div><b>Семантическая открытость</b><span>Стимул должен допускать больше одного прочтения. Фотография с однозначным сюжетом даёт описание вместо рассказа.</span></div>
+      <div><b>Отсутствие готового сюжета</b><span>Элементы комплекта не должны сами собой складываться в историю. Ряд «билет, вокзал, поезд, чемодан» задачи не создаёт.</span></div>
+      <div><b>Культурная нейтральность</b><span>Стимул не должен требовать фоновых знаний: локальных реалий, известных в одной стране персон, региональных брендов.</span></div>
+      <div><b>Лексическая доступность</b><span>Ядро стимула описывается лексикой уровня B1 — когнитивный ресурс уходит на содержание, а не на подбор слова.</span></div>
+    </div>
+
+    <h2 class="sec">Тематические рамки</h2>
+    <p class="note">Деловые переговоры · поездки · учебные ситуации. Рамка задаётся косвенно, через подбор
+       стимулов, поэтому регистр высказывания студент определяет сам. В приложении рамку можно выбрать
+       на главном экране — банки размечены по всем восьми заданиям.</p>
+
+    <h2 class="sec">Оценивание</h2>
+    <p class="note">Отдельная шкала для каждого задания не нужна: все восемь нацелены на один конструкт
+       и различаются типом стимула. Единая рубрика по четырём параметрам, каждый от 1 до 5,
+       где <b style="color:var(--orange2)">5 — высший балл</b>. Итог — среднее, округлённое до целого.</p>
+    <table class="m">
+      <tr><th>Параметр</th><th>На что смотреть</th></tr>
+      <tr><td>Беглость</td><td class="g">темп, паузы хезитации, перезапуски</td></tr>
+      <tr><td>Связность</td><td class="g">одна сюжетная линия, мотивированные переходы</td></tr>
+      <tr><td>Лексическое разнообразие</td><td class="g">вариативность, точность, отсутствие повторов-заполнителей</td></tr>
+      <tr><td>Дискурсивные маркеры</td><td class="g">связки и средства хеджирования; в приложении считаются автоматически</td></tr>
+    </table>
+
+    <h2 class="sec">Организация занятия</h2>
+    <div class="crit">
+      <div><b>Место в занятии</b><span>Блок на 5—7 минут удобнее ставить в начало пары: снимается языковой барьер, и упражнение не откладывается на конец.</span></div>
+      <div><b>Ротация форматов</b><span>Четырёх-пяти форматов, чередующихся в течение семестра, достаточно, чтобы студент не заготавливал универсальный ответ.</span></div>
+      <div><b>Роль преподавателя</b><span>Исправление ошибок по ходу монолога разрушает задание. Замечания по языку накапливаются и даются после высказывания.</span></div>
+      <div><b>Время подготовки</b><span>Двадцать секунд — рабочий минимум для B2 и верхняя граница для тренировки спонтанности. Минута переводит задание в подготовленный монолог.</span></div>
+    </div>
+
+    <h2 class="sec">Запросы к модели</h2>
+    <p class="note">Формулировки, которыми порождается стимульный материал. Копируются без правок;
+       запрет на очевидные связи внутри комплекта пропускать нельзя.</p>
+    <div>
+      <div class="prow"><div class="pn">01 · Emoji Story Sprint</div><div class="pq">«Сгенерируй 10 последовательностей по 5 эмодзи для задания на развитие спонтанной речи (уровень B2). Тематика: деловые переговоры, поездки, учебные ситуации. Эмодзи внутри одной последовательности не должны складываться в очевидный сюжет.»</div></div>
+      <div class="prow"><div class="pn">02 · Word Explosion</div><div class="pq">«Составь 15 наборов по 5 английских существительных уровня B2. Слова внутри одного набора не должны относиться к одной тематической группе и не должны быть однокоренными.»</div></div>
+      <div class="prow"><div class="pn">03 · One Photo — Three Stories</div><div class="pq">«Сгенерируй фотореалистичное изображение зала вылета аэропорта в час пик, горизонтальная ориентация. Отдельно составь 12 коммуникативных ролей для описания этой ситуации, по одной строке на роль.»</div></div>
+      <div class="prow"><div class="pn">04 · Mystery Sound</div><div class="pq">«Составь список из 20 звуковых сцен длительностью 5—10 секунд, каждая из которых допускает не менее двух равновероятных версий места действия. Укажи для каждой сцены возможные интерпретации.»</div></div>
+      <div class="prow"><div class="pn">05 · Picture Switch</div><div class="pq">«Подбери 5 цепочек по 3 изображения (описание словами), между соседними изображениями в цепочке не должно быть очевидной смысловой связи.»</div></div>
+      <div class="prow"><div class="pn">06 · Unexpected Ending</div><div class="pq">«Составь 25 карточек-обстоятельств (одно слово или короткая фраза на английском), каждое из которых способно резко изменить ход любой истории.»</div></div>
+      <div class="prow"><div class="pn">07 · Reverse Interview</div><div class="pq">«Составь 10 наборов по 4 коротких английских ответа разной степени уверенности (от полного согласия до уклончивого отрицания) для задания на восстановление вопросов.»</div></div>
+      <div class="prow"><div class="pn">08 · Emotion Shift</div><div class="pq">«Составь 8 карточек эмоций для устного задания и для каждой дай по 5 английских выражений и междометий уровня B2, характерных для этой эмоции.»</div></div>
+    </div>
+  </div>
+
+  <!-- ================= QR ================= -->
+  <div class="pane" id="qr">
+    <h2 class="sec">QR-коды для слайдов и раздачи</h2>
+    <p class="note">Наведите камеру телефона. Главный код — «Витрина»: он ведёт на эту страницу
+       и заменяет собой все остальные, если на слайде нужен один код. Коды заданий открывают
+       нужное задание сразу, минуя главный экран.</p>
+    <div class="qrgrid">
+      <div class="qrcard"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJwAAACcAQAAAACiw//gAAABRUlEQVR42uWWsdVdIQyDP//n9fIGd/+x7gbyBErBO2mSDlcJDZjCYEkIV/hjzA9/Gf/i5lQVdE1V9wnuD0oML53wnuA+5xRTj0QNTN3X/jmTNXSmvYHnN6cq/Va0RZwClRm5jXKfszIN/h035FbzJEksouQE8TWeQxPclH3WXN/TJJg4RBZc35MkEBzFiW1d5/yBcjqM6aqHZqH2EGNFki3khdodJIAQOSt42oZDlA0LeBL7y5KRMdng3f7SH1tkA8+A0FefCO/o04oCUVbw/DCH9iIzw5I+ZXAwcoJWeJdlRzKStcKRjROE7WgHT9DzYh5o0p2V/2gMgpYpNGLH54Nz9G4veN1UlRoaTw88Gz6f2LEUiXjhHX1g2oxgPBTqLDVm3QytlmevDxmr3LzPzr+ZODmWpyX/NGDZxgbl/h3Vf9zP/wJRESp6M+oXdgAAAABJRU5ErkJggg==" alt="QR — Витрина — все 9 игр">
+        <div class="qt">Витрина — все 9 игр</div><div class="qn">главный код, ведёт на эту страницу</div>
+        <code>https://teachingislove2020-bit.github.io/speaking-games/</code></div>
+      <div class="qrcard"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALwAAAC8AQAAAADqMvkGAAABw0lEQVR42u2Ysa3cQAxE335cPuxA/Zd1HcxUMA70z4ABG3BARfZGkhgQ5JBvSZ3y25Mv/nD+ZUPOOTlDkkM45Jyz6uMFJRJHaTMulGwHmEPe+O0z45lDDttxAMLzxsodwzNCZbjm4iKjdR/UrV3Rfj+6db3o4zQD/uXbQLMaR9vWiLr29/tqHNSuhSyr1G3l3Vy9AC6a8WiY9KB1zb91tkpVpBZv50qV5WJZrila92FsjKtyy7+u+d0dWCqmcrXcH1+EOVDeGcGYw6z3OdZHfFwD0rYeCJnKqktL9YQeVLKlGypar6tKqLahgsp43YfbomIJS9BqmSUhU4FHMMgM3r6jRj3k4AB44J1tXskWoqZUAu/zCov6xlZr+4H+qP0TjnXxPktAV6kCCYPYZskLQvCAGKEgn+n67KNgJu86KBlpu66wW7mlLW613INfYJSBYMAC573NdmFUJOtDxnVe3RWLy50v65H7A9T6vsqBssxEFQLkwuSY5viBPYoLZI7KEDoPzO0VtmxkU6sPzFe1hUTv5WNZj49BFvExbhk9sEdlGJAEk3mgB1vXolA+Q+n2bnDAFz34HqsJEau72v//JX9r+AGSVMXs4IgZ1QAAAABJRU5ErkJggg==" alt="QR — Portrait Quiz Game">
+        <div class="qt">Portrait Quiz Game</div><div class="qn">коммуникативно-сценарный модуль</div>
+        <code>https://teachingislove2020-bit.github.io/word_port_game/word_portrait_game%20(4).html</code></div>
+      <div class="qrcard"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKwAAACsAQAAAADOSnp1AAABeUlEQVR42u2XsZFeQQiDPzyXiw7+/st6HUgVyMG7wDO+kMwmWwJGKwSrnfJD5Bc/xr+SzsxkdjO7s2Rmjmp/QQmET/MpeY9X18mAcEIyS4Y73IDC8gHpOW9DkB2c57KX1K0rLCxkt65Pak+z4D8yC80R7u+gRdZ79pW+mZnFE8PjTeaM78p1pcouKtYRbmpAFaWyZZ31klZtZYm6LoI73MWotLjF1SVut25RS6l1pZMvQOMVYjAKmZ7pBAu1QqU+5bvY79xYYNe+48QroocA/V4AR7WDnrVYgcID0dkelGtBW0twqUFXtvX204YzDVJTFYoFqPZh7Rohg62quuREqvVyLdtc6rs1uKaitnq6qypcl2IV3707jOfpLkO8xNy9O7Yr++Xa37mrmRdjsAJ8br2moGi1fCiu3VMfy3RQdiAop77KwGtPqKs7nWS+R599zCzPseXPZqzPiu6tj1WX7YBQcuxjX86LZV/6E8CtaKvad3tw/v8v/4rfGzRyaXJz4o8AAAAASUVORK5CYII=" alt="QR — Task Lab — все 8 заданий">
+        <div class="qt">Task Lab — все 8 заданий</div><div class="qn">главный экран комплекса</div>
+        <code>https://teachingislove2020-bit.github.io/speaking-games/task-lab/</code></div>
+      <div class="qrcard"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKwAAACsAQAAAADOSnp1AAABe0lEQVR42u2XsbFlNwxDjzybQx28/st6HRxWAAf6gWe8IR2tlYkBLy8IgNQpvznzF789f0p4zjnMuXfm3pk55yzlpra2xaYFW+vW78xh7nhnLoY5y1ANlw9y/4M2GPJlTr+7uVNgAK/3864ruU/ngv+IXOgs8aRtLU2L+u5bHBSapqJU2Mr9Cygnw0kvmYTrmnaoaaimDZQ1TKoB1QYxa7qkkqfztCUvtsbvb+bkwuHwfa6yVjeSQNQgWcQbAz/6cbeXCiW11fyQfI3fZHovX3I6vZNFvEsNNDQQFzFJqphCFBb5XbXWJIYie17VkPcNSmyz6IMvabCtySq/awtY8nq66CdRKz/+jbqpnWL7kG+7ORvCCPTocLw9XdOOSUq1oSXNUt2nA9wwPZ2f3Wd3zouSJj86XdxPyuTE+7aqu1a3rTZvLDzxb3JQS23z5sPijvxgOJ8zfuKbP3uzAbxMPng+5dDVd4Mmgoqr+wnYPCekuLafnP/fl/86fwMdNpAMEcII6AAAAABJRU5ErkJggg==" alt="QR — Emoji Story Sprint">
+        <div class="qt">Emoji Story Sprint</div><div class="qn">знаково-символический стимул</div>
+        <code>https://teachingislove2020-bit.github.io/speaking-games/task-lab/#emoji</code></div>
+      <div class="qrcard"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKwAAACsAQAAAADOSnp1AAABc0lEQVR42u2XsW0FMQxDn4LfUxvc/mN5A2oCpvAHEiAp1SXq7EI+PIqSrsIvMR/8Gn/leqpqgK4umqmqvScT08XkCA+J93JPwVAM09VMbTF5AaDMwwPusy7D1GMGz9nUkjhxDMZCvseV3JVp8LebhszSd9/ACbbu2WtMAFm2E1s2e7lBDkSOULD2cisQKUSyrDUtv3iL2A5ikYnBNglWcOTF3IqIUUKIlU0tbYSEHdmLTCJJb1MS7/JWSCzrko+3eL9gWvMYhrbeDWArd4YObqHncGC01weveZJYuv5c05JYESi3ShZrMNfwxjIo9mZ9+9oHoyja9KWkyJawbLPpHYSs+KK3sukdAsGXeVjj/QGjUVoUuBlTi3MeiTdr321lbc5Dp8EDrQGszTlvGVl3LizynqpiWmgoGDSre5WjBFnv/uLtPTb0MdWc5ZV/mDJPi/Tyjky6U0JoZnFHVqAHF57Dgd7TErATkij2Xh+s///LH/EJwsB+zq24N78AAAAASUVORK5CYII=" alt="QR — Word Explosion">
+        <div class="qt">Word Explosion</div><div class="qn">лексический стимул</div>
+        <code>https://teachingislove2020-bit.github.io/speaking-games/task-lab/#words</code></div>
+      <div class="qrcard"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKwAAACsAQAAAADOSnp1AAABbklEQVR42u2XsW0lQQxD3xjOOR38/sv6HVAVvAvWB9wBDpXZSgY7AaGlKFFz5JuYD76Nn3I955w5h5nLvWfOOUvYWK1RbWqrtVu/MwdmhnvnNZc5u1RNXpc3nbvJ9+dzvHPBs17iCK95w7WVuIV9nAv95+aCs6QT1VZAUp/vNQ22pE1FA+keNialDaZYs4YtYEtTEOkmJ9FYIzZJ9/JuLSmEqFj2OCmmQgxis8XJkZOh8HqTCwyypm8qWiV2s5ZH4AQGD+WS2evLyiPr5qu2m/pusYSExCz2vCHYAmmVzbxDITElhmz2ZY1AqhRZ5aSYkhhKYTHv9GuaAGWV72cEllRqCN3EfsafT857fflB8NAWOoG75/Noa6rmGSvpIiehGgPUwub8VluEJu2iXz57LMlNU2Cgu3ts+yjd2jUNfsLczgvgOnC2V/680ZP7mkv2nxPnlpkLTXb5lhCSuuo7BZq/vZPH4Pa8+Pd9+V/8AbwPkgiEqJkhAAAAAElFTkSuQmCC" alt="QR — One Photo — Three Stories">
+        <div class="qt">One Photo — Three Stories</div><div class="qn">визуальный стимул</div>
+        <code>https://teachingislove2020-bit.github.io/speaking-games/task-lab/#photo</code></div>
+      <div class="qrcard"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKwAAACsAQAAAADOSnp1AAABfElEQVR42u2XsW1tMQxDjz5eT21w9x/LG1ATMIXfBwIkpVIl6qyCgGlSoit8U/OPb+u3tKeqGLpnumemqpawiRMnhigBJ463rjPF9OPMdFlMbXHyeguDRpjSDzxDrMNUzi62Ah6BcT8oW9iVafCnTkNmSSdJ4lyV2L7nLQ0agolxiGEL+wWPGKRSShqJ9pp3iBOIrUQQ1jiJrSDbEcZa8yUxuj5XEnR7a/q2ZtRQXZw7VdZ0IrBAxsJok+8Iv/3j7bcUec9ay9h72P89KTvEEdrDlpCBiFzaNzUYbCsgGxb1fWmWJVl3suxhCwGKCXKixTmYEAkcX/I3deIkyEGxFvl+3U38GA1nOuVZ3fOqlCvpEaGyiT2MlLKHcqeyl6ukq8SIBEWLfB+6mVQOxWKuqgBMY1rAZB48i/kkZVqum1N6LZ/4Ui1h6dpnj+9pAwfBKe6S2MyxlWbs1mmzjB0GPbieUGT132BJBtt3ZK3tBnCChEPwWj6pv//ll/oA9lN2NErUBTMAAAAASUVORK5CYII=" alt="QR — Mystery Sound">
+        <div class="qt">Mystery Sound</div><div class="qn">аудиальный стимул</div>
+        <code>https://teachingislove2020-bit.github.io/speaking-games/task-lab/#sound</code></div>
+      <div class="qrcard"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKwAAACsAQAAAADOSnp1AAABbUlEQVR42u2XsZHdQAxDHz2XYztQ/2VdB28rgAP9wDO+kJnNQBoxwOyCIAlN+SHuL36MfyV9Z4aZGZhz752ZJewvKBfh4ZbBcveuc4cLz/fNGcOddarkufZs8v31eed4D/TuljiFB0/U85BuYU/vAf/IHOhW76QtBE4OfD5XsKlCE2gsFVqXsGvbmGASm2QTGyqYtIGyhm1SSyNBTF3ERpOStOTNrXGSNq2lYNPFWqZAQGOQbJ7bqFjA5Vq2pqSqEV3ElmhLK7VhU9+h0lYaiLt85+WGKGzqWzTS1FDcnCexAQshvlrfwq74lpCabOrbpk0jpGaR7y8Ypxzo+b6n42VxNzTVRPNunW7qBPxQIu72vBUTCS2r87uQxrydw+q+bOs7YpN89tCiP+k9uYbXVZ0lf/LOWENSX67Xzv0F98j3wRsZXpO17GPnIU98/duqj+30cJynDGWR76K+T9zU94fiBktxzZ/M///Lv+I3rl2CsP4KCksAAAAASUVORK5CYII=" alt="QR — Picture Switch">
+        <div class="qt">Picture Switch</div><div class="qn">визуальный стимул</div>
+        <code>https://teachingislove2020-bit.github.io/speaking-games/task-lab/#switch</code></div>
+      <div class="qrcard"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKwAAACsAQAAAADOSnp1AAABcklEQVR42u2XsZXdMAwEh36XLzv4/ZelDgYVrANd4Od3ITIbmRgspQG4XJ3yQ80vfqx/ZXnOOTMM514uc87Z27KVDzl9GIfWPe05MOdkmJzLnC0mXwCkJ3yAPOttmAkMzLPZS2prQ8UQba0r2qdzwT9WLnSW3rttG9qieZ9dYwJo1Faj7Gm/mjQaUsyeNsUmpYkxa72kNU017ycQ2OZNiyk2LvKmoZCGUrM1J1/kcOT2cpAMc7p3LmkgIaWu8m6LbYyCVteYTG5yCsPHfBvAlsfOw+14A5+HByZ7vPOOX2sCmzP4jl0gbRTSzTOfFDFCqpvaqhVsmmaTSWhrExqVzflGU/BFb7rpVVaML/Pinp9wOvTCAW9GFv1EUjDqeylnkwlJUpUAuOlVtRrz3gtrvN8cy9xL5nNgyKzmKhNKmm9/cTPHSijnkXN5diP/zMyRzw29yxmZcHtCyMx2jm2E8l5siz4I2tK+GSh7Gfn//+Xf9Ru4W5D2ZKfdxwAAAABJRU5ErkJggg==" alt="QR — Unexpected Ending">
+        <div class="qt">Unexpected Ending</div><div class="qn">ролевой и событийный</div>
+        <code>https://teachingislove2020-bit.github.io/speaking-games/task-lab/#twist</code></div>
+      <div class="qrcard"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKwAAACsAQAAAADOSnp1AAABhUlEQVR42u2XMY7dMBBDn4LtqRv4/sf6N3hzAqbwFgGy5XSJYMCGCsIiZzjUKT+s+cWP61/ZnnMOc5mZe2fmnLOETW1toU0FW+vWceYwJMzca5izxcnX+zo+J8jJIt/f2GbkHjq7EqeQ4SLeh3QL+3Qu+MfOhc4SNsDcHsoRsteXVKGSiqVCl2qQNo1GUhKbZA+bAKWaNu/nVs/n03gcwpkxuNbzJUQ0/T4Da5zYlhZDwKZ7WiqWlKhBwqaWURCCm1pSrdHYakS3sL/gBi88H3I6vZO92WCMDe9DXOQEQzSFvAawyHeobRJDcdNPTJKmEmKb7mn5fOAZjj2dh8np1kwbeAacHIDB2asTgvmucopuatmQQgt5zWWNbw6BcuxwvN3im1pi+jpVS7rY83SYS04/HJjTvdnQ1lpJEuravHzzSQdu5E1Vt7OYY8UEk7r4318wVwqf8OHwhqzNyH/G5xye+Oa3zRxLDvk8nqccunpvyOuwKm76N6A10VJcyyfn//3yr/UbMexsuqkktPkAAAAASUVORK5CYII=" alt="QR — Reverse Interview">
+        <div class="qt">Reverse Interview</div><div class="qn">ролевой и событийный</div>
+        <code>https://teachingislove2020-bit.github.io/speaking-games/task-lab/#reverse</code></div>
+      <div class="qrcard"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKwAAACsAQAAAADOSnp1AAABeUlEQVR42u2XvW3FQAyDPwXuqQ28/1jegJqAKe4lCJBXqksEGLauIGjq9yq8sfngrf2V46kqaJjpnjnuCvYFYYCy2hQOs/c7UwzWPdNYTC1LVcXcmN7U+3q9M9DTmd0QK8B043bfx13BrkyDf5w0ZKd2SJJYMQm2j7+EbUPOY5+vNewkkWMUSY6kPWwJI2IrEYQl7IvhURkGUR7feClPSNDRWknQicFWfudJKUBRPFGyyxsZ2f6Sfi8H9Uo+8GYsD2/ZcmLrleRrvCWEZJs4QpvYli0iItAmb1kWVkCnAWzyJk4kWQSz2qskRTFCTrSFXYEza9qqzM1o1vq3kyDjoFiLel8w4MYaPdMpD2s1byWRIBFKshnLgOWDabxX8x8wFtDj6lZaLGqSGKKcymF7Xvp7YBIvzksfpkKRba/2wcSOEUbxIu8Lpg3wCFOcJWtzj218V+mWz/62uccOjZ523aHIZg5Gkgy28Wb/BmxZwiF4bT+p//vlL/sEu8B2WwzgGckAAAAASUVORK5CYII=" alt="QR — Emotion Shift">
+        <div class="qt">Emotion Shift</div><div class="qn">ролевой и событийный</div>
+        <code>https://teachingislove2020-bit.github.io/speaking-games/task-lab/#emotion</code></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    Габдуллина А.Ш., Гончарова Н.А. — Генеративный искусственный интеллект как инструмент проектирования
+    коммуникативных заданий для развития спонтанной англоязычной речи студентов.<br>
+    Санкт-Петербургский государственный университет аэрокосмического приборостроения ·
+    Мичуринский государственный аграрный университет
+  </div>
+</div>
+
+<script>
+/* вкладки: состояние отражается в адресе, чтобы ссылку можно было дать сразу на нужную */
+var tabs = document.querySelectorAll('.tabs button');
+var panes = document.querySelectorAll('.pane');
+function show(name){
+  var found = false;
+  panes.forEach(function(p){ var on = (p.id === name); p.classList.toggle('on', on); if(on) found = true; });
+  if(!found){ document.getElementById('games').classList.add('on'); name = 'games'; }
+  tabs.forEach(function(b){ b.classList.toggle('on', b.dataset.tab === name); });
+}
+tabs.forEach(function(b){
+  b.addEventListener('click', function(){
+    show(b.dataset.tab);
+    if(location.hash !== '#' + b.dataset.tab) location.hash = b.dataset.tab;
+    window.scrollTo(0, 0);
+  });
+});
+window.addEventListener('hashchange', function(){ show((location.hash || '').replace('#','') || 'games'); });
+show((location.hash || '').replace('#','') || 'games');
+</script>
+</body>
+</html>

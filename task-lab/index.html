@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Файл полностью автономный: ни одного обращения в интернет.
+     CSP ниже запрещает браузеру загружать что-либо извне в принципе. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; font-src local; form-action 'none'; base-uri 'none'">
+<title>Spontaneous Speaking — Task Lab</title>
+<style>
+:root{
+  --bg:#17132b; --bg2:#221c3f; --panel:#2b2450; --panel2:#332a5e;
+  --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.18);
+  --ink:#f4f1ff; --muted:#b9b0d8; --dim:#8d84ad;
+  --orange:#f59e0b; --orange2:#fbbf24; --green:#4ade80; --green2:#34d399;
+  --lav:#a78bfa; --cream:#f7f6ef; --red:#fb7185;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:radial-gradient(1200px 800px at 50% -10%,#2a2250 0%,var(--bg) 70%);
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased; min-height:100%;
+}
+.serif{font-family:Georgia,"Times New Roman",serif}
+#app{max-width:1180px;margin:0 auto;padding:22px 18px 70px}
+
+/* ---------- top bar ---------- */
+.topbar{display:flex;align-items:center;gap:14px;margin-bottom:24px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-size:12px;letter-spacing:.19em;
+  text-transform:uppercase;color:var(--lav);font-weight:700}
+.brand .sp{font-size:14px}
+.topbar .spacer{flex:1}
+.coinbox{display:flex;align-items:center;gap:8px;background:rgba(245,158,11,.12);
+  border:1px solid rgba(245,158,11,.35);color:var(--orange2);
+  padding:7px 14px;border-radius:999px;font-weight:700;font-size:14px}
+.btn{border:0;cursor:pointer;font-family:inherit;font-weight:700;font-size:15px;
+  border-radius:999px;padding:12px 26px;transition:transform .12s ease,filter .12s ease}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.06)}
+.btn:active{transform:translateY(0)}
+.btn-green{background:linear-gradient(180deg,var(--green) 0%,var(--green2) 100%);color:#0d2b1d}
+.btn-orange{background:linear-gradient(180deg,var(--orange2) 0%,var(--orange) 100%);color:#3a2405}
+.btn-ghost{background:rgba(255,255,255,.07);color:var(--muted);border:1px solid var(--line2)}
+.btn-sm{padding:9px 18px;font-size:13.5px}
+.btn-xs{padding:6px 14px;font-size:12.5px;border-radius:999px}
+
+/* ---------- hub ---------- */
+.hero{text-align:center;padding:12px 0 30px}
+.hero h1{font-size:clamp(34px,6vw,58px);line-height:1.03;font-weight:800;letter-spacing:-.02em}
+.hero h1 .accent{color:var(--orange);font-style:italic;font-family:Georgia,serif}
+.hero p.lead{color:var(--muted);font-style:italic;margin-top:14px;font-size:16.5px}
+.hero .meta{margin-top:16px;color:var(--dim);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:16px}
+.tcard{background:linear-gradient(160deg,var(--panel) 0%,#241e46 100%);
+  border:1px solid var(--line);border-radius:18px;padding:20px 19px 17px;cursor:pointer;
+  transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease;position:relative;overflow:hidden}
+.tcard:hover{transform:translateY(-3px);border-color:rgba(167,139,250,.5);
+  box-shadow:0 14px 34px rgba(0,0,0,.36)}
+.tcard .num{position:absolute;top:14px;right:16px;font-size:12px;color:var(--dim);font-weight:700}
+.tcard .ico{font-size:27px;margin-bottom:11px}
+.tcard h3{font-size:18.5px;font-weight:750;letter-spacing:-.01em}
+.tcard .sub{color:var(--dim);font-size:12.5px;margin-top:5px;text-transform:uppercase;letter-spacing:.07em}
+.tcard .skill{color:var(--muted);font-size:13.5px;margin-top:12px;line-height:1.45}
+.tcard .time{margin-top:13px;display:inline-block;font-size:12px;color:var(--green);
+  background:rgba(74,222,128,.10);border:1px solid rgba(74,222,128,.28);
+  padding:4px 11px;border-radius:999px;font-weight:700}
+
+/* ---------- rules panel ---------- */
+.panel{background:rgba(255,255,255,.045);border:1px solid var(--line);
+  border-radius:18px;padding:22px 24px;margin:0 auto;max-width:640px;text-align:left}
+.panel h4{display:flex;align-items:center;gap:9px;font-size:12.5px;letter-spacing:.17em;
+  text-transform:uppercase;color:var(--orange);margin-bottom:16px;font-weight:800}
+ol.steps{list-style:none;counter-reset:s}
+ol.steps li{counter-increment:s;display:flex;gap:13px;margin-bottom:12px;
+  color:var(--ink);font-size:14.6px;line-height:1.5}
+ol.steps li:last-child{margin-bottom:0}
+ol.steps li::before{content:counter(s);flex:none;width:23px;height:23px;border-radius:50%;
+  background:var(--orange);color:#3a2405;font-size:12.5px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;margin-top:1px}
+
+/* ---------- generic screen ---------- */
+.screen-head{display:flex;align-items:flex-start;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+.screen-head h2{font-size:27px;font-weight:780;letter-spacing:-.02em}
+.screen-head .tag{color:var(--dim);font-size:13px;margin-top:4px}
+.center{text-align:center}
+.wrap-narrow{max-width:760px;margin:0 auto}
+.stage{background:linear-gradient(160deg,#2a2350 0%,#221c44 100%);border:1px solid var(--line);
+  border-radius:22px;padding:34px 28px;text-align:center;min-height:250px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px}
+.phase-label{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:800}
+.phase-label.hot{color:var(--orange)}
+.phase-label.go{color:var(--green)}
+.bigtime{font-size:52px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.bar{height:7px;border-radius:99px;background:rgba(255,255,255,.10);overflow:hidden;width:min(430px,80%)}
+.bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--green2));
+  width:100%;transition:width .25s linear}
+.bar.warn > i{background:linear-gradient(90deg,var(--orange2),var(--orange))}
+.banner{display:flex;align-items:center;gap:9px;justify-content:center;
+  background:rgba(245,158,11,.13);border:1px solid rgba(245,158,11,.36);
+  color:var(--orange2);padding:11px 18px;border-radius:12px;font-size:13.5px;font-weight:650}
+.banner.lock{background:rgba(251,113,133,.11);border-color:rgba(251,113,133,.34);color:#fda4af}
+.hint{color:var(--dim);font-size:13.5px;line-height:1.6}
+.controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:22px}
+
+/* ---------- stimulus displays ---------- */
+.emoji-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.emoji-row span{font-size:clamp(38px,8vw,64px);line-height:1;
+  background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:16px;
+  padding:14px 16px;animation:pop .3s ease both}
+@keyframes pop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+.word-row{display:flex;gap:13px;justify-content:center;flex-wrap:wrap}
+.word-row span{font-size:clamp(20px,3.4vw,30px);font-weight:700;padding:12px 22px;
+  border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--line2);
+  animation:pop .3s ease both}
+.word-row span.n1{color:#fbbf24}.word-row span.n2{color:#4ade80}.word-row span.n3{color:#a78bfa}
+.word-row span.n4{color:#67e8f9}.word-row span.n5{color:#fda4af}
+.chips{display:flex;gap:9px;justify-content:center;flex-wrap:wrap}
+.chip{background:var(--green);color:#0d2b1d;font-weight:700;font-size:14px;
+  padding:8px 17px;border-radius:999px}
+.chip.o{background:rgba(245,158,11,.16);color:var(--orange2);border:1px solid rgba(245,158,11,.4)}
+.chip.g{background:rgba(255,255,255,.06);color:var(--muted);border:1px solid var(--line2)}
+.chip.used{background:rgba(74,222,128,.16);color:var(--green);border:1px solid rgba(74,222,128,.45);
+  text-decoration:line-through}
+.chip.tap{cursor:pointer}
+.chip.tap:hover{filter:brightness(1.12)}
+.scene{font-family:Georgia,serif;font-size:clamp(19px,3vw,27px);line-height:1.42;max-width:640px}
+.scene .em{color:var(--orange2)}
+.roleface{font-size:60px;line-height:1;margin-bottom:6px}
+.rolename{font-family:Georgia,serif;font-size:30px;font-weight:600}
+
+/* ---------- pick grid (Portrait-quiz style) ---------- */
+.pickwrap{background:var(--cream);border-radius:22px;padding:26px 22px;color:#221c3f}
+.pickwrap h3{text-align:center;font-family:Georgia,serif;font-size:25px;font-weight:600}
+.pickwrap .ps{text-align:center;color:#6b6485;font-size:13px;margin:5px 0 20px}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+@media(min-width:560px){.pgrid{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:900px){.pgrid{grid-template-columns:repeat(6,1fr)}}
+.pcard{background:#1e1b3a;border-radius:13px;aspect-ratio:3/4;cursor:pointer;position:relative;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;
+  transition:transform .13s ease,box-shadow .13s ease;border:1px solid #2f2b52}
+.pcard:hover{transform:translateY(-4px);box-shadow:0 10px 22px rgba(0,0,0,.28)}
+.pcard .n{position:absolute;top:8px;left:10px;font-size:11px;color:#5f5a86;font-weight:700}
+.pcard .q{font-size:23px;opacity:.85}
+.pcard .t{font-size:9.5px;letter-spacing:.13em;color:#6f699a;text-transform:uppercase;font-weight:700}
+.pcard.taken{opacity:.34;pointer-events:none}
+.pcard.taken .t{color:#4ade80}
+
+/* ---------- misc ---------- */
+.sel{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.sel button{background:rgba(255,255,255,.06);border:1px solid var(--line2);color:var(--muted);
+  padding:8px 16px;border-radius:999px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:650}
+.sel button.on{background:var(--lav);border-color:var(--lav);color:#1b1235}
+.answers{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;width:100%;max-width:640px}
+.acard{background:rgba(255,255,255,.05);border:1px solid var(--line2);border-radius:15px;
+  padding:20px 16px;text-align:center}
+.acard .qn{font-size:11px;color:var(--dim);letter-spacing:.14em;text-transform:uppercase;font-weight:800}
+.acard .av{font-family:Georgia,serif;font-size:20px;margin-top:9px;color:var(--ink)}
+.acard .ah{font-size:12px;color:var(--lav);margin-top:11px;line-height:1.45;display:none}
+.acard.revealed .ah{display:block}
+.twist{background:linear-gradient(160deg,#3b1d3d,#2a1533);border:1px solid rgba(251,113,133,.45);
+  border-radius:20px;padding:30px 34px;animation:flash .45s ease both}
+@keyframes flash{from{opacity:0;transform:scale(.85) rotate(-3deg)}to{opacity:1;transform:none}}
+.twist .lbl{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#fda4af;font-weight:800}
+.twist .val{font-family:Georgia,serif;font-size:clamp(26px,5vw,40px);margin-top:9px}
+.dots{display:flex;gap:7px;justify-content:center;margin-top:6px}
+.dots i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.16)}
+.dots i.on{background:var(--green)}
+.rubric{display:grid;gap:13px;max-width:520px;margin:0 auto;text-align:left}
+.rrow{display:flex;align-items:center;gap:14px;justify-content:space-between;flex-wrap:wrap}
+.rrow span{font-size:14px;color:var(--ink);display:flex;flex-direction:column;gap:2px}
+.rrow span i{font-style:normal;font-size:11.5px;color:var(--dim)}
+.rrow .rbtns{display:flex;gap:6px}
+.rrow .rbtns button{width:36px;height:36px;border-radius:10px;border:1px solid var(--line2);
+  background:rgba(255,255,255,.05);color:var(--muted);cursor:pointer;font-family:inherit;font-weight:700}
+.rrow .rbtns button:hover{border-color:var(--lav)}
+.rrow .rbtns button.on{background:var(--lav);color:#1b1235;border-color:var(--lav)}
+
+/* поле «кто отвечал» */
+.who{width:100%;margin-bottom:16px;padding:11px 14px;border-radius:11px;
+  border:1px solid var(--line2);background:rgba(255,255,255,.05);color:var(--ink);
+  font-family:inherit;font-size:14px}
+.who::placeholder{color:var(--dim)}
+.who:focus{outline:none;border-color:var(--lav)}
+
+/* итоговый балл */
+.markbox{display:flex;align-items:center;justify-content:space-between;gap:16px;
+  margin-top:18px;padding:15px 18px;border-radius:14px;
+  background:rgba(255,255,255,.05);border:1px solid var(--line2)}
+.markbox .ml{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);font-weight:800}
+.markbox .mw{font-size:13px;color:var(--muted);margin-top:3px}
+.mv{font-size:38px;font-weight:800;line-height:1;color:var(--dim)}
+.mv.m5{color:#4ade80}.mv.m4{color:#a3e635}.mv.m3{color:#fbbf24}
+.mv.m2{color:#fb923c}.mv.m1{color:#fb7185}
+
+/* журнал занятия */
+.jt{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
+.jt th{text-align:left;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--dim);font-weight:800;padding:8px 10px;border-bottom:1px solid var(--line2)}
+.jt td{padding:11px 10px;border-bottom:1px solid var(--line);color:var(--ink);text-align:left}
+.jt td:last-child,.jt th:last-child{text-align:right}
+.jt tr.sum td{color:var(--muted);font-weight:700;border-bottom:0}
+.jt td i{display:block;font-style:normal;font-size:11px;color:var(--dim);margin-top:2px}
+.jrn .hint{max-width:520px}
+button.coinbox{cursor:pointer;font-family:inherit}
+button.coinbox:hover{filter:brightness(1.15)}
+.foot{margin-top:44px;text-align:center;color:var(--dim);font-size:12px;line-height:1.7}
+.foot b{color:var(--muted);font-weight:650}
+.sr{position:absolute;left:-9999px}
+
+/* переключатель языка */
+.langsw{display:flex;gap:4px;background:rgba(255,255,255,.05);border:1px solid var(--line2);
+  border-radius:999px;padding:3px}
+.langsw button{border:0;background:transparent;color:var(--dim);cursor:pointer;font-family:inherit;
+  font-size:12px;font-weight:800;letter-spacing:.06em;padding:6px 12px;border-radius:999px}
+.langsw button.on{background:var(--lav);color:#1b1235}
+
+/* тематическая рамка */
+.framebar{display:flex;align-items:center;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:22px}
+.framebar > span{font-size:11.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);font-weight:800}
+.framebar .sel button[data-frame].on{background:var(--orange);border-color:var(--orange);color:#3a2405}
+
+/* запрос к модели */
+.promptbox{font-size:13.5px;line-height:1.6;color:var(--muted);font-style:italic;
+  background:rgba(255,255,255,.04);border-left:2px solid var(--orange);
+  padding:12px 15px;border-radius:0 10px 10px 0}
+@media (max-width:560px){
+  .stage{padding:26px 16px}
+  #app{padding:16px 12px 60px}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* =====================================================================
+   SPONTANEOUS SPEAKING — TASK LAB
+   Стимульные банки собраны по четырём требованиям отбора:
+   семантическая открытость · отсутствие готового сюжета ·
+   культурная нейтральность · лексическая доступность (ядро B1)
+   ===================================================================== */
+
+/* --- Тематические рамки, заданные в статье ---------------------------------
+   «Тематика: деловые переговоры, поездки, учебные ситуации».
+   Рамка задаётся косвенно, через подбор стимулов: один-два элемента набора
+   отсылают к рамке, остальные от неё удалены. Требование «отсутствие готового
+   сюжета» при этом сохраняется — элементы внутри набора не складываются
+   в историю сами собой.
+   N = деловые переговоры · T = поездки · S = учебные ситуации              */
+const FRAMES = {
+  N:{ru:'Деловые переговоры', en:'Business negotiations'},
+  T:{ru:'Поездки',            en:'Travel'},
+  S:{ru:'Учебные ситуации',   en:'Study situations'}
+};
+
+/* --- 1. EMOJI STORY SPRINT: 15 последовательностей, по 5 на рамку --- */
+const EMOJI_SETS = [
+  {f:'N', v:["📊","🐌","☂️","🔑","🎻"]},
+  {f:'N', v:["🤝","🌋","🧊","📻","🪜"]},
+  {f:'N', v:["💼","🍄","🎠","⚓","🌪️"]},
+  {f:'N', v:["📝","🐘","🕯️","🛼","🧀"]},
+  {f:'N', v:["🏢","🪁","🐟","🔦","🍯"]},
+  {f:'T', v:["🧳","🐝","📡","🍋","🪞"]},
+  {f:'T', v:["✈️","🧵","🪨","🎂","🦉"]},
+  {f:'T', v:["🗺️","❄️","🥁","🧴","🚪"]},
+  {f:'T', v:["🎫","🌵","🖨️","🐧","🕰️"]},
+  {f:'T', v:["🚂","🍞","🪫","🎪","🧭"]},
+  {f:'S', v:["📚","🌧️","☕","🚲","🏠"]},
+  {f:'S', v:["🎓","🐌","🔌","🌻","🧯"]},
+  {f:'S', v:["📓","🛰️","🍉","🥾","🔔"]},
+  {f:'S', v:["🔬","🎈","🧦","🌉","🪃"]},
+  {f:'S', v:["✏️","🐘","🛎️","🍄","🛶"]}
+];
+
+/* --- 2. WORD EXPLOSION: 15 наборов B2 по 5 существительных --------------
+   Внутри набора слова из разных тематических групп и не однокоренные;
+   рамку задаёт одно слово, остальные от него семантически удалены.      */
+const WORDS_B2 = [
+  {f:'N', v:["contract","jellyfish","chimney","applause","gravel"]},
+  {f:'N', v:["invoice","glacier","feather","ladder","whisper"]},
+  {f:'N', v:["deadline","orchard","siren","thumb","mirror"]},
+  {f:'N', v:["budget","cactus","ribbon","lighthouse","argument"]},
+  {f:'N', v:["warehouse","thunder","saddle","pearl","envelope"]},
+  {f:'T', v:["suitcase","echo","chandelier","quarrel","pebble"]},
+  {f:'T', v:["harbour","insult","kettle","statistics","moss"]},
+  {f:'T', v:["compass","balcony","penalty","moth","yeast"]},
+  {f:'T', v:["crossroads","violin","bandage","dust","staircase"]},
+  {f:'T', v:["tunnel","portrait","avalanche","receipt","beehive"]},
+  {f:'S', v:["laboratory","fence","lullaby","tide","coupon"]},
+  {f:'S', v:["spreadsheet","canyon","marble","hiccup","sailor"]},
+  {f:'S', v:["poetry","helmet","greenhouse","bargain","owl"]},
+  {f:'S', v:["blueprint","wardrobe","drought","referee","cinnamon"]},
+  {f:'S', v:["telescope","anchor","rumour","blanket","harvest"]}
+];
+/* B1: три слова вместо пяти, показ восемь секунд (вариант из статьи) */
+const WORDS_B1 = [
+  {f:'N', v:["office","rabbit","ticket"]},   {f:'N', v:["meeting","honey","shoes"]},
+  {f:'N', v:["money","garden","letter"]},    {f:'N', v:["boss","apple","mirror"]},
+  {f:'T', v:["train","river","phone"]},      {f:'T', v:["hotel","mountain","key"]},
+  {f:'T', v:["airport","bicycle","cheese"]}, {f:'T', v:["map","desert","spoon"]},
+  {f:'S', v:["exam","library","fish"]},      {f:'S', v:["teacher","storm","coin"]},
+  {f:'S', v:["homework","forest","envelope"]},{f:'S', v:["classroom","ocean","drum"]}
+];
+
+/* --- 3. ONE PHOTO — THREE STORIES ---------------------------------------
+   Первая сцена — та, что названа в статье: зал вылета аэропорта в час пик. */
+const SCENES = [
+  {f:'T', ico:"🛫", txt:"An airport departure hall at rush hour. A woman is standing completely still in the middle of the moving crowd."},
+  {f:'T', ico:"🧳", txt:"A hotel lobby at three in the morning. A single suitcase is standing by the reception desk."},
+  {f:'T', ico:"🚉", txt:"A railway platform. The train is leaving and two people are still standing there, not looking at each other."},
+  {f:'T', ico:"🛂", txt:"A queue at passport control that has not moved for twenty minutes."},
+  {f:'N', ico:"💻", txt:"A meeting room. Eleven people are looking at one closed laptop in the middle of the table."},
+  {f:'N', ico:"🌙", txt:"An open-plan office at nine in the evening. One desk lamp is on and there are two coffee cups on the same table."},
+  {f:'N', ico:"🤝", txt:"Two delegations leaving a negotiating room by different doors. Nobody is carrying any papers."},
+  {f:'N', ico:"📦", txt:"A warehouse aisle. A trolley full of boxes has been left in the middle of the floor."},
+  {f:'S', ico:"📋", txt:"A university corridor. A crowd of students is pressed around one noticeboard; nobody is speaking."},
+  {f:'S', ico:"✍️", txt:"An examination hall twenty minutes before the end. One desk is already empty."},
+  {f:'S', ico:"📚", txt:"A library reading room where every seat is taken except one, and that one has a coat on it."},
+  {f:'S', ico:"🎓", txt:"A lecture theatre after the lecture. The projector is still on and shows one unfinished slide."}
+];
+/* 12 коммуникативных ролей, по одной строке на роль; первые пять названы в статье */
+const ROLES = [
+  {ico:"📰", name:"Journalist",       nameRu:"Журналист",        line:"Report the fact, name your source, stay outside the story.", lineRu:"Фиксируйте факт, ссылайтесь на источник, оставайтесь вне события."},
+  {ico:"🏛️", name:"Politician",       nameRu:"Политик",          line:"Generalise, avoid the specifics, turn it into a position.",  lineRu:"Обобщайте, уходите от конкретики, переводите в позицию."},
+  {ico:"👁️", name:"Eyewitness",       nameRu:"Очевидец",         line:"Say only what you personally saw and where you were standing.", lineRu:"Только то, что видели сами, и откуда именно смотрели."},
+  {ico:"🎒", name:"Tourist",          nameRu:"Турист",           line:"You do not know the place — describe it as something unfamiliar.", lineRu:"Вы здесь впервые — описывайте место как незнакомое."},
+  {ico:"💼", name:"Manager",          nameRu:"Руководитель",     line:"Translate the situation into costs, risk and reputation.",  lineRu:"Переведите ситуацию в издержки, риск и репутацию."},
+  {ico:"👮", name:"Police officer",   nameRu:"Полицейский",      line:"Ask what happened, in what order, and who was present.",    lineRu:"Что произошло, в каком порядке, кто присутствовал."},
+  {ico:"🏘️", name:"Local resident",   nameRu:"Местный житель",   line:"Compare it with how the place normally is on an ordinary day.", lineRu:"Сравните с тем, как здесь бывает в обычный день."},
+  {ico:"📸", name:"Photographer",     nameRu:"Фотограф",         line:"Talk about light, framing and the one shot you would take.", lineRu:"Свет, кадр и тот единственный снимок, который вы бы сделали."},
+  {ico:"📑", name:"Insurance agent",  nameRu:"Страховой агент",  line:"Look for damage, responsibility and what is covered.",      lineRu:"Ущерб, ответственность и что покрывается договором."},
+  {ico:"🧒", name:"Child",            nameRu:"Ребёнок",          line:"Simple words, direct questions, no idea what is normal here.", lineRu:"Простые слова, прямые вопросы, никакой нормы вы не знаете."},
+  {ico:"🛡️", name:"Security guard",   nameRu:"Охранник",         line:"You have been watching for six hours — what changed just now?", lineRu:"Вы смотрите шесть часов подряд — что изменилось сейчас?"},
+  {ico:"🎙️", name:"Radio host",       nameRu:"Радиоведущий",     line:"You are live. Nobody can see it — describe everything aloud.", lineRu:"Вы в прямом эфире. Слушатели не видят — проговаривайте всё."}
+];
+
+/* --- 4. MYSTERY SOUND: 20 сцен, каждая допускает не менее двух версий --- */
+const SOUNDS = [
+  {f:'T', name:"Low continuous murmur of voices", recipe:"crowd",
+   guesses:["an airport hall","a restaurant at lunch","a break between lectures","an indoor market"]},
+  {f:'T', name:"Noise with a slow pulse under it", recipe:"platform",
+   guesses:["a railway platform","a factory floor","a swimming pool","a busy hotel lobby"]},
+  {f:'T', name:"Low continuous hum", recipe:"engine",
+   guesses:["a plane cabin","a ship","an air-conditioning unit","an underground train"]},
+  {f:'T', name:"Broad moving noise", recipe:"wind",
+   guesses:["wind in a street","the sea","a motorway from far away","an air vent"]},
+  {f:'T', name:"Sharp high tone, twice", recipe:"whistle",
+   guesses:["a referee","a train leaving","a kettle","someone calling a dog"]},
+  {f:'T', name:"Rising and falling tone", recipe:"siren",
+   guesses:["an ambulance","a police car","the end of a factory shift","a test of an alarm system"]},
+  {f:'T', name:"Steady hiss on a hard surface", recipe:"rain",
+   guesses:["heavy rain on a roof","a shower running","distant applause","a fire hose"]},
+  {f:'N', name:"Dense irregular clatter", recipe:"applause",
+   guesses:["an audience applauding","heavy rain on leaves","a flock of birds taking off","a fire burning"]},
+  {f:'N', name:"Fast light irregular taps", recipe:"typing",
+   guesses:["someone typing up the minutes","rain on a window","small footsteps","a printer working"]},
+  {f:'N', name:"Rustling that stops and starts", recipe:"paper",
+   guesses:["someone going through a contract","a plastic bag","leaves in the wind","a small animal"]},
+  {f:'N', name:"Bright metallic clicks", recipe:"coins",
+   guesses:["coins on a table","keys being dropped","cutlery in a kitchen","a machine sorting parts"]},
+  {f:'N', name:"Short repeated electronic tones", recipe:"beep",
+   guesses:["a card terminal","a microwave","a reversing lorry","a hospital monitor"]},
+  {f:'N', name:"Rhythmic mechanical noise", recipe:"machine",
+   guesses:["a printer in the next room","a washing machine","an escalator","a small boat engine"]},
+  {f:'N', name:"Regular soft knocks", recipe:"steps",
+   guesses:["someone pacing outside the room","a horse on a road","hammering next door","a dripping tap"]},
+  {f:'S', name:"One click per second", recipe:"tick",
+   guesses:["a wall clock in an exam hall","a metronome","a car indicator","a countdown device"]},
+  {f:'S', name:"Single ringing tone with long decay", recipe:"bell",
+   guesses:["the end of a class","a doorbell","a lift arriving","a phone in another room"]},
+  {f:'S', name:"Deep single stroke, repeated", recipe:"gong",
+   guesses:["a clock striking the hour","a ship's bell","a church bell","the start of a broadcast"]},
+  {f:'S', name:"Two tones alternating slowly", recipe:"alarm2",
+   guesses:["a fire drill","a level-crossing barrier","an emergency vehicle abroad","a game show buzzer"]},
+  {f:'S', name:"Falling liquid", recipe:"water",
+   guesses:["water poured into a glass","rain on a window","a shower","a stream"]},
+  {f:'S', name:"Slow double thuds", recipe:"heart",
+   guesses:["a heartbeat before an exam","a drum far away","footsteps upstairs","bass from a club"]}
+];
+
+/* --- 5. PICTURE SWITCH: цепочки по 3-4 кадра, без очевидной связи --- */
+const CHAINS = [
+  {f:'N', v:[{ico:"🛗",t:"A crowded lift, doors just closing"},{ico:"🌻",t:"A field of sunflowers at midday"},{ico:"🥤",t:"A broken vending machine"}]},
+  {f:'N', v:[{ico:"🖥️",t:"A server room with blinking lights"},{ico:"🐫",t:"A camel by a petrol station"},{ico:"📠",t:"A fax machine still plugged in"}]},
+  {f:'N', v:[{ico:"🏗️",t:"A building site on a Sunday"},{ico:"🩰",t:"A ballet rehearsal"},{ico:"🏨",t:"A vending machine in a hotel corridor"}]},
+  {f:'N', v:[{ico:"🛎️",t:"A reception desk with nobody behind it"},{ico:"🌋",t:"A volcano seen from a plane"},{ico:"🧺",t:"A launderette at midnight"},{ico:"🗺️",t:"A wall map with one pin left in it"}]},
+  {f:'T', v:[{ico:"🛂",t:"A queue at passport control"},{ico:"🍅",t:"A greenhouse full of tomatoes"},{ico:"📺",t:"A cinema screen showing only static"}]},
+  {f:'T', v:[{ico:"❄️",t:"A snowy bus stop, nobody waiting"},{ico:"🎚️",t:"A recording studio, red light on"},{ico:"🧳",t:"Old suitcases piled in an attic"}]},
+  {f:'T', v:[{ico:"🚢",t:"A cargo ship at night"},{ico:"🧵",t:"A tailor's workshop"},{ico:"🏊",t:"A rooftop swimming pool"}]},
+  {f:'T', v:[{ico:"🚦",t:"A traffic jam at sunset"},{ico:"🐠",t:"An aquarium in a waiting room"},{ico:"⛽",t:"A petrol station in the rain"},{ico:"🎺",t:"A trumpet left on a bench"}]},
+  {f:'S', v:[{ico:"🎓",t:"An empty lecture hall"},{ico:"🐟",t:"A fish market at six in the morning"},{ico:"📡",t:"A rooftop with a satellite dish"}]},
+  {f:'S', v:[{ico:"🪜",t:"A library ladder on rails"},{ico:"🏎️",t:"A go-kart track"},{ico:"🏥",t:"A hospital corridor at night"}]},
+  {f:'S', v:[{ico:"🪟",t:"A window with the blind half down"},{ico:"🎠",t:"A carousel standing still"},{ico:"📮",t:"A postbox at the end of a lane"},{ico:"🛼",t:"A pair of roller skates on a doorstep"}]},
+  {f:'S', v:[{ico:"🧊",t:"An ice rink before opening"},{ico:"🪴",t:"A plant nursery under glass"},{ico:"🪑",t:"A single chair in an empty hall"},{ico:"☕",t:"A café terrace in the rain"}]}
+];
+const LINKERS = ["meanwhile","on the way there","a few hours later","what I did not know at that moment",
+  "by the time we got there","and that is where it all changed","the strange thing was"];
+
+/* --- 6. UNEXPECTED ENDING: карточки-обстоятельства.
+   Первые пять названы в статье. Рамка здесь не задаётся: карточка должна
+   уметь сломать любой сюжет, независимо от темы.                        */
+const TWISTS = ["An alien","An election","A lost passport","A fire","A wedding","A power cut",
+  "The wrong twin","A missing key","An earthquake","A phone call at 4 a.m.","The deal falls through",
+  "A stranger knows your name","The road is closed","Everyone is two hours late","A snake",
+  "The building has been sold","You are on live television","The money is fake","A dog follows you",
+  "The lift stops","Snow in July","Your partner quits","A letter from ten years ago",
+  "The train is going the wrong way","Someone is filming you","The boss walks in",
+  "The whole city goes dark","You lose your voice","The contract is in another language","A child is missing"];
+
+/* --- 7. REVERSE INTERVIEW: первый набор — тот, что приведён в статье --- */
+const ANSWER_SETS = [
+  [["Yes.","full agreement — the question was closed and direct","полное согласие: вопрос был закрытым и прямым"],
+   ["Probably.","a prediction — the question asked about the future","прогноз: вопрос был о будущем"],
+   ["I don't think so.","a personal opinion was requested","запрашивалось личное мнение"],
+   ["Not necessarily.","the question contained a generalisation","в вопросе было обобщение"]],
+  [["Absolutely.","strong agreement with an evaluation","решительное согласие с оценкой"],
+   ["It depends.","the question was too general to answer as it stood","вопрос был слишком общим"],
+   ["Hardly ever.","the question asked about frequency","вопрос был о частотности"],
+   ["No comment.","the question touched something the speaker will not discuss","затронуто то, что обсуждать не станут"]],
+  [["That's right.","a fact was offered for confirmation","факт предложен на подтверждение"],
+   ["Possibly.","a hypothesis was put forward","выдвинута гипотеза"],
+   ["I doubt it.","a probability was suggested","предположена вероятность"],
+   ["Definitely not.","an accusation or a wrong assumption","обвинение или неверное допущение"]],
+  [["Of course.","the answer was self-evident to the speaker","ответ был для говорящего очевиден"],
+   ["More or less.","a precise formulation was requested","требовалась точная формулировка"],
+   ["Rarely.","the question was about how often","вопрос был о том, как часто"],
+   ["I'd rather not say.","a private matter was raised","затронуто личное"]],
+  [["Certainly.","a request or permission","просьба или разрешение"],
+   ["Perhaps.","an invitation or a suggestion","приглашение или предложение"],
+   ["Not really.","an assumption about feelings or preference","допущение о чувствах или предпочтении"],
+   ["Under no circumstances.","a proposal the speaker rejects completely","предложение, отвергаемое полностью"]],
+  [["Every time.","a habit or a repeated event","привычка или повторяющееся событие"],
+   ["Sometimes, yes.","a yes/no question about a tendency","общий вопрос о тенденции"],
+   ["Almost never.","frequency again, from the other end","снова частотность, с другого конца"],
+   ["That's not for me to decide.","a question about responsibility","вопрос об ответственности"]],
+  [["Without a doubt.","certainty about an outcome","уверенность в исходе"],
+   ["In theory, yes.","the question mixed principle and practice","вопрос смешал принцип и практику"],
+   ["Not that I know of.","a question about facts outside the speaker's knowledge","факты вне знания говорящего"],
+   ["I can neither confirm nor deny that.","a question about confidential information","вопрос о конфиденциальном"]],
+  [["Exactly.","a reformulation the speaker fully accepts","переформулировка, принятая полностью"],
+   ["To some extent.","a strong claim was offered","предложено сильное утверждение"],
+   ["Very unlikely.","a forecast was requested","запрошен прогноз"],
+   ["Absolutely not.","a wrong conclusion was drawn","сделан неверный вывод"]],
+  [["I'm afraid so.","bad news was checked","уточнялась плохая новость"],
+   ["It's possible.","a cause was suggested","предположена причина"],
+   ["Not as far as I remember.","a question about the past","вопрос о прошлом"],
+   ["I wouldn't put it that way.","the wording of the question was unfair","формулировка вопроса была некорректной"]],
+  [["Naturally.","a question about something normal or expected","вопрос об ожидаемом"],
+   ["Up to a point.","agreement with limits","согласие с ограничением"],
+   ["Hardly.","the question overstated something","вопрос преувеличивал"],
+   ["That's a different question.","the question changed the subject","вопрос сменил предмет"]]
+];
+
+/* --- 8. EMOTION SHIFT: 8 карточек эмоций, по 5 выражений уровня B2 --- */
+const EMOTIONS = [
+  {ico:"🤩",name:"Excitement",     nameRu:"Воодушевление", col:"#fbbf24", ph:["No way!","You'll never guess what happened.","This is huge.","I still can't believe it.","Guess what —"]},
+  {ico:"😤",name:"Irritation",     nameRu:"Раздражение",   col:"#fb7185", ph:["Here we go again.","Seriously?","For heaven's sake.","That's just typical.","Oh, come on."]},
+  {ico:"😞",name:"Disappointment", nameRu:"Разочарование", col:"#a78bfa", ph:["What a shame.","I had hoped for more.","Oh well.","That's a pity.","So much for that."]},
+  {ico:"🤨",name:"Suspicion",      nameRu:"Недоверие",     col:"#67e8f9", ph:["Hang on a second.","That doesn't add up.","Are you sure about that?","Something's not right here.","I find that hard to believe."]},
+  {ico:"😮‍💨",name:"Relief",        nameRu:"Облегчение",    col:"#4ade80", ph:["Thank goodness.","Phew.","That was close.","What a relief.","I thought we'd lost it."]},
+  {ico:"😐",name:"Indifference",   nameRu:"Безразличие",   col:"#94a3b8", ph:["Whatever.","It makes no difference to me.","If you say so.","Suit yourself.","I couldn't care less."]},
+  {ico:"😌",name:"Pride",          nameRu:"Гордость",      col:"#f59e0b", ph:["I must say, I'm rather pleased.","We pulled it off.","Not bad, even if I say so myself.","That was all our doing.","I knew we could."]},
+  {ico:"😰",name:"Anxiety",        nameRu:"Тревога",       col:"#c084fc", ph:["What if it goes wrong?","I've got a bad feeling about this.","I keep thinking about it.","I'm not sure I can handle it.","It keeps me up at night."]}
+];
+
+/* --- Дискурсивные маркеры: четвёртый параметр рубрики оценивания --- */
+const MARKERS = {
+  narrate:["to begin with","the thing is","as it turned out","in the end","at that point"],
+  connect:["meanwhile","on the way there","a few hours later","by then","what I didn't know was"],
+  hedge:["it must be","it might well be","judging by the sound","as far as I can tell","I'd say"],
+  stance:["from where I stood","officially speaking","if you ask me","in our case","to be fair"],
+  repair:["what I mean is","let me put it differently","or rather","sorry, I meant","how shall I say"],
+  twist:["suddenly","it turned out that","out of nowhere","the next thing I knew","and that changed everything"]
+};
+
+/* =====================================================================
+   ENGINE
+   ===================================================================== */
+const app = document.getElementById('app');
+const S = { level:'B2', frame:'any', timers:[], audio:null, markers:0, log:[] };
+
+/* Журнал переживает перезагрузку и переход по ссылке на другое задание.
+   Если браузер запрещает хранение (режим инкогнито, открытие файла с диска),
+   всё продолжает работать — журнал просто живёт до закрытия вкладки. */
+const LOGKEY = 'tasklab.journal.v1';
+function loadLog(){
+  try{ const raw = localStorage.getItem(LOGKEY);
+       if(raw){ const v = JSON.parse(raw); if(Array.isArray(v)) S.log = v; } }
+  catch(e){ /* хранение недоступно — не страшно */ }
+}
+function saveLog(){
+  try{ localStorage.setItem(LOGKEY, JSON.stringify(S.log)); }catch(e){}
+}
+loadLog();
+
+const rnd  = n => Math.floor(Math.random()*n);
+const pick = a => a[rnd(a.length)];
+const shuffle = a => { const b=a.slice(); for(let i=b.length-1;i>0;i--){const j=rnd(i+1);[b[i],b[j]]=[b[j],b[i]];} return b; };
+const mmss = s => Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
+function h(html){ const t=document.createElement('template'); t.innerHTML=html.trim(); return t.content.firstElementChild; }
+function clearTimers(){ S.timers.forEach(t=>clearInterval(t)); S.timers=[]; stopAudio(); }
+function markerHit(){ S.markers++; refreshJournal(); }
+function refreshJournal(){
+  document.querySelectorAll('[data-jn]').forEach(e=>e.textContent=S.log.length);
+}
+/* балл 1-5: среднее по четырём параметрам, 5 — высший */
+function finalMark(scores){
+  const filled = scores.filter(v=>v>0);
+  if(!filled.length) return 0;
+  return Math.max(1, Math.min(5, Math.round(filled.reduce((a,b)=>a+b,0)/filled.length)));
+}
+function markWord(m){ return T.markWords[LANG][m] || ''; }
+
+/* countdown: returns a stop() handle */
+function countdown(secs, onTick, onDone){
+  let left = secs;
+  onTick(left, secs);
+  const id = setInterval(()=>{
+    left--;
+    onTick(Math.max(0,left), secs);
+    if(left<=0){ clearInterval(id); S.timers = S.timers.filter(t=>t!==id); onDone && onDone(); }
+  },1000);
+  S.timers.push(id);
+  return ()=>{ clearInterval(id); S.timers = S.timers.filter(t=>t!==id); };
+}
+
+/* ---------- stage builder ---------- */
+function makeStage(host, labelText){
+  const st = h(`<div class="stage">
+      <div class="phase-label" data-label>${labelText||''}</div>
+      <div data-slot style="width:100%;display:flex;flex-direction:column;align-items:center;gap:20px"></div>
+      <div data-timer style="display:none;flex-direction:column;align-items:center;gap:12px;width:100%">
+        <div class="bigtime" data-big>0:00</div>
+        <div class="bar" data-bar><i></i></div>
+      </div>
+    </div>`);
+  host.appendChild(st);
+  const api = {
+    root: st,
+    label: (t,cls)=>{ const e=st.querySelector('[data-label]'); e.textContent=t; e.className='phase-label '+(cls||''); },
+    slot:  st.querySelector('[data-slot]'),
+    set:   nodeOrHtml=>{ api.slot.innerHTML=''; api.add(nodeOrHtml); },
+    add:   n=>{ api.slot.appendChild(typeof n==='string'?h(n):n); },
+    timer(on){ st.querySelector('[data-timer]').style.display = on?'flex':'none'; },
+    tick(left,total,warn){
+      st.querySelector('[data-big]').textContent = mmss(left);
+      const bar = st.querySelector('[data-bar]');
+      bar.classList.toggle('warn', !!warn);
+      bar.querySelector('i').style.width = (total? (left/total*100):0)+'%';
+    }
+  };
+  return api;
+}
+
+/* ---------- discourse-marker bonus strip (rubric parameter 4) ---------- */
+function markerStrip(kind){
+  S.markers = 0;   /* счётчик обнуляется на каждое выступление */
+  const wrap = h(`<div style="width:100%">
+      <div class="hint" style="margin-bottom:9px">${t('markerHint')}</div>
+      <div class="chips" data-mk></div></div>`);
+  const box = wrap.querySelector('[data-mk]');
+  MARKERS[kind].forEach(m=>{
+    const c = h(`<span class="chip o tap">“${m}”</span>`);
+    c.onclick = ()=>{ if(c.classList.contains('used'))return; c.classList.add('used'); markerHit(); };
+    box.appendChild(c);
+  });
+  return wrap;
+}
+
+/* ---------- end-of-turn rubric (4 параметра оценивания) ---------- */
+function rubricPanel(onDone){
+  const scores = [0,0,0,0];
+  const suggested = Math.max(1, Math.min(5, S.markers + 1));   /* подсказка по числу маркеров */
+  const p = h(`<div class="panel" style="max-width:600px">
+      <h4>${t('rateTurn')}</h4>
+      <input class="who" data-who placeholder="${t('whoSpeaking')}">
+      <div class="rubric" data-r></div>
+      <div class="markbox">
+        <div>
+          <div class="ml">${t('finalMark')}</div>
+          <div class="mw" data-word>${t('setRows')}</div>
+        </div>
+        <div class="mv" data-mark>—</div>
+      </div>
+      <div class="controls">
+        <button class="btn btn-green btn-sm" data-ok>${t('saveJournal')}</button>
+        <button class="btn btn-ghost btn-sm" data-skip>${t('skip')}</button>
+      </div>
+    </div>`);
+  const box = p.querySelector('[data-r]');
+
+  const recalc = ()=>{
+    const m = finalMark(scores);
+    p.querySelector('[data-mark]').textContent = m || '—';
+    p.querySelector('[data-mark]').className = 'mv m'+(m||0);
+    p.querySelector('[data-word]').textContent = m ? (markWord(m)+' · '+t('isHighest')) : t('setRows');
+  };
+
+  RUBRIC.forEach((r,i)=>{
+    const hint = (i===3 && S.markers) ? ` · ${S.markers} ${t('heard')}` : '';
+    const row = h(`<div class="rrow"><span><b>${r[LANG]}</b><i>${L(r,'note')}${hint}</i></span><div class="rbtns"></div></div>`);
+    const bt = row.querySelector('.rbtns');
+    [1,2,3,4,5].forEach(v=>{
+      const b=h(`<button>${v}</button>`);
+      b.onclick=()=>{ scores[i]=v; bt.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); recalc(); };
+      if(i===3 && v===suggested && S.markers){ scores[3]=v; b.classList.add('on'); }
+      bt.appendChild(b);
+    });
+    box.appendChild(row);
+  });
+  recalc();
+
+  p.querySelector('[data-ok]').onclick = ()=>{
+    const m = finalMark(scores);
+    if(!m){ p.querySelector('[data-word]').textContent = t('giveMark'); return; }
+    const now = new Date();
+    const two = n => String(n).padStart(2,'0');
+    S.log.push({
+      who: (p.querySelector('[data-who]').value || '').trim() || ('Student ' + (S.log.length+1)),
+      task: S.task || '—', scores: scores.slice(), mark: m, markers: S.markers,
+      time: two(now.getHours())+':'+two(now.getMinutes()),
+      date: two(now.getDate())+'.'+two(now.getMonth()+1)+'.'+now.getFullYear()
+    });
+    saveLog(); refreshJournal(); onDone();
+  };
+  p.querySelector('[data-skip]').onclick = onDone;
+  return p;
+}
+
+/* ---------- журнал занятия (держится в памяти до закрытия вкладки) ---------- */
+document.addEventListener('click', e=>{ if(e.target.closest('[data-journal]')) openJournal(); });
+
+function journalText(){
+  if(!S.log.length) return '';
+  const w = [t('date'),t('time'),t('colSpeaker'),t('colTask'),'1','2','3','4',t('colMark')];
+  const rows = S.log.map((r,i)=>[r.date||'', r.time||'', r.who, r.task, ...r.scores, r.mark].join('\t'));
+  return w.join('\t') + '\n' + rows.join('\n');
+}
+function openJournal(){
+  const ov = h(`<div class="stage jrn" style="position:fixed;inset:14px;z-index:60;overflow:auto;
+      background:radial-gradient(700px 500px at 50% 0%,#332a5e,#1a1533);justify-content:flex-start;padding-top:30px">
+      <div class="phase-label hot">${t('lessonJournal')}</div>
+      <div class="hint">${t('journalHint')}</div>
+      <div data-body style="width:100%;max-width:640px"></div>
+      <div class="controls">
+        <button class="btn btn-green btn-sm" data-copy>${t('copyList')}</button>
+        <button class="btn btn-ghost btn-sm" data-clear>${t('clearAll')}</button>
+        <button class="btn btn-ghost btn-sm" data-x>${t('close')}</button>
+      </div>
+      <div class="hint" data-msg style="min-height:18px"></div>
+    </div>`);
+  const body = ov.querySelector('[data-body]');
+  const draw = ()=>{
+    if(!S.log.length){ body.innerHTML = `<div class="hint" style="text-align:center;padding:26px 0">${t('nothingYet')}</div>`; return; }
+    const avg = (S.log.reduce((a,r)=>a+r.mark,0)/S.log.length).toFixed(1);
+    body.innerHTML = `<table class="jt">
+      <tr><th>#</th><th>${t('colSpeaker')}</th><th>${t('colTask')}</th><th>${t('colMark')}</th></tr>
+      ${S.log.map((r,i)=>`<tr><td>${i+1}</td>
+        <td>${r.who}<i>${r.date||''} ${r.time||''}</i></td><td>${r.task}</td>
+        <td><span class="mv m${r.mark}" style="font-size:19px">${r.mark}</span></td></tr>`).join('')}
+      <tr class="sum"><td></td><td>${t('groupAverage')}</td><td></td><td>${avg}</td></tr></table>`;
+  };
+  draw();
+  ov.querySelector('[data-x]').onclick = ()=>ov.remove();
+  ov.querySelector('[data-clear]').onclick = ()=>{ S.log=[]; saveLog(); refreshJournal(); draw(); };
+  ov.querySelector('[data-copy]').onclick = ()=>{
+    const txt = journalText(); if(!txt) return;          /* не называть txt буквой t: */
+    const msg = ov.querySelector('[data-msg]');          /* t — функция перевода       */
+    const fallback = ()=>{ const ta=document.createElement('textarea'); ta.value=txt;
+      document.body.appendChild(ta); ta.select();
+      try{ document.execCommand('copy'); msg.textContent=t('copied'); }
+      catch(err){ msg.textContent=t('copyBlocked'); }
+      ta.remove(); };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(()=>{ msg.textContent=t('copied'); }, fallback);
+    } else fallback();
+  };
+  document.body.appendChild(ov);
+}
+
+/* =====================================================================
+   WEB AUDIO — синтез звуковых сцен для Mystery Sound
+   ===================================================================== */
+function ctx(){
+  if(!S.audio){ try{ S.audio = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } }
+  if(S.audio.state==='suspended') S.audio.resume();
+  return S.audio;
+}
+let AUDIO_NODES = [];
+function stopAudio(){ AUDIO_NODES.forEach(n=>{ try{n.stop?n.stop():n.disconnect();}catch(e){} }); AUDIO_NODES=[]; }
+function noiseBuf(c, sec, brown){
+  const b = c.createBuffer(1, Math.max(1,Math.floor(c.sampleRate*sec)), c.sampleRate);
+  const d = b.getChannelData(0); let last=0;
+  for(let i=0;i<d.length;i++){
+    const w = Math.random()*2-1;
+    if(brown){ last=(last+0.02*w)/1.02; d[i]=last*3.2; } else d[i]=w;
+  }
+  return b;
+}
+function grain(c, dest, at, dur, freqLo, freqHi, gain, brown){
+  const src=c.createBufferSource(); src.buffer=noiseBuf(c,dur,brown);
+  const bp=c.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=(freqLo+freqHi)/2;
+  bp.Q.value=Math.max(.4,(freqLo+freqHi)/2/Math.max(1,(freqHi-freqLo)));
+  const g=c.createGain(); g.gain.setValueAtTime(0,at);
+  g.gain.linearRampToValueAtTime(gain,at+0.004);
+  g.gain.exponentialRampToValueAtTime(0.0005,at+dur);
+  src.connect(bp).connect(g).connect(dest); src.start(at); src.stop(at+dur+0.02);
+  AUDIO_NODES.push(src); return src;
+}
+function tone(c, dest, at, dur, freq, gain, type, decay){
+  const o=c.createOscillator(); o.type=type||'sine'; o.frequency.setValueAtTime(freq,at);
+  const g=c.createGain(); g.gain.setValueAtTime(0,at);
+  g.gain.linearRampToValueAtTime(gain,at+0.012);
+  if(decay) g.gain.exponentialRampToValueAtTime(0.0005,at+dur);
+  else { g.gain.setValueAtTime(gain,at+dur-0.03); g.gain.linearRampToValueAtTime(0,at+dur); }
+  o.connect(g).connect(dest); o.start(at); o.stop(at+dur+0.05);
+  AUDIO_NODES.push(o); return o;
+}
+function playRecipe(name, dur){
+  const c = ctx(); if(!c) return false;
+  stopAudio();
+  dur = dur || 8;
+  const t0 = c.currentTime + 0.06;
+  const out = c.createGain(); out.gain.value = 0.9; out.connect(c.destination);
+  AUDIO_NODES.push(out);
+  const fade = c.createGain(); fade.gain.setValueAtTime(0,t0);
+  fade.gain.linearRampToValueAtTime(1,t0+0.25);
+  fade.gain.setValueAtTime(1,t0+dur-0.5);
+  fade.gain.linearRampToValueAtTime(0,t0+dur);
+  fade.connect(out); AUDIO_NODES.push(fade);
+  const bed = (lo,hi,gain,brown)=>{
+    const src=c.createBufferSource(); src.buffer=noiseBuf(c,dur+0.4,brown); src.loop=true;
+    const f=c.createBiquadFilter(); f.type='bandpass'; f.frequency.value=(lo+hi)/2; f.Q.value=0.7;
+    const g=c.createGain(); g.gain.value=gain;
+    src.connect(f).connect(g).connect(fade); src.start(t0); src.stop(t0+dur);
+    AUDIO_NODES.push(src); return {f,g};
+  };
+  const every=(step,fn,jitter)=>{ let t=t0+0.1, i=0;
+    while(t<t0+dur-0.05){ fn(t,i++); t += step*(jitter?(0.7+Math.random()*0.6):1); } };
+
+  switch(name){
+    case 'rain':    { const b=bed(600,3000,0.22); const l=c.createOscillator(); const lg=c.createGain();
+                      l.frequency.value=0.4; lg.gain.value=0.05; l.connect(lg).connect(b.g.gain); l.start(t0); l.stop(t0+dur); AUDIO_NODES.push(l); break; }
+    case 'applause':  every(0.018,(t)=>grain(c,fade,t,0.05,1200,5000,0.16+Math.random()*0.16),true); bed(900,4000,0.05); break;
+    case 'crowd':     bed(180,900,0.30,true); every(1.1,(t)=>tone(c,fade,t,0.5,140+rnd(120),0.035,'sawtooth',true),true); break;
+    case 'siren':   { const o=c.createOscillator(); o.type='sine'; o.frequency.value=760;
+                      const lfo=c.createOscillator(); lfo.frequency.value=0.42; const lg=c.createGain(); lg.gain.value=190;
+                      lfo.connect(lg).connect(o.frequency); const g=c.createGain(); g.gain.value=0.13;
+                      o.connect(g).connect(fade); o.start(t0); o.stop(t0+dur); lfo.start(t0); lfo.stop(t0+dur);
+                      AUDIO_NODES.push(o,lfo); break; }
+    case 'steps':     every(0.56,(t)=>grain(c,fade,t,0.11,90,420,0.5,true),true); break;
+    case 'tick':      every(1.0,(t)=>grain(c,fade,t,0.02,2500,7000,0.32)); break;
+    case 'engine':  { tone(c,fade,t0,dur,58,0.12,'sawtooth'); tone(c,fade,t0,dur,87,0.05,'sawtooth'); bed(90,420,0.13,true); break; }
+    case 'wind':    { const b=bed(150,1400,0.30,true);
+                      const lfo=c.createOscillator(); lfo.frequency.value=0.15; const lg=c.createGain(); lg.gain.value=500;
+                      lfo.connect(lg).connect(b.f.frequency); lfo.start(t0); lfo.stop(t0+dur); AUDIO_NODES.push(lfo); break; }
+    case 'beep':      every(0.82,(t)=>tone(c,fade,t,0.13,900,0.1,'square')); break;
+    case 'water':     every(0.09,(t)=>grain(c,fade,t,0.14,700,2600,0.14),true); bed(500,2500,0.14); break;
+    case 'bell':      every(2.6,(t)=>{ tone(c,fade,t,2.2,880,0.14,'sine',true); tone(c,fade,t,1.8,1320,0.06,'sine',true); tone(c,fade,t,1.2,2200,0.03,'sine',true); }); break;
+    case 'typing':    every(0.13,(t)=>grain(c,fade,t,0.025,1800,6000,0.22+Math.random()*0.12),true); break;
+    case 'heart':     every(0.92,(t)=>{ tone(c,fade,t,0.16,62,0.55,'sine',true); tone(c,fade,t+0.24,0.13,52,0.38,'sine',true); }); break;
+    case 'coins':     every(0.34,(t)=>{ grain(c,fade,t,0.09,2500,7000,0.30); tone(c,fade,t,0.22,1900+rnd(900),0.09,'sine',true); },true); break;
+    case 'whistle':   every(2.9,(t)=>tone(c,fade,t,0.55,2150,0.10,'sine')); break;
+    case 'machine': { bed(200,1200,0.16,true); tone(c,fade,t0,dur,72,0.07,'sawtooth');
+                      every(0.33,(t)=>grain(c,fade,t,0.08,300,1500,0.22,true)); break; }
+    case 'paper':     every(0.42,(t)=>grain(c,fade,t,0.18,1500,6000,0.24),true); break;
+    case 'alarm2':    every(1.0,(t,i)=>tone(c,fade,t,0.46,i%2?520:680,0.10,'square')); break;
+    case 'gong':      every(3.1,(t)=>{ tone(c,fade,t,2.9,112,0.30,'sine',true); tone(c,fade,t,2.4,168,0.12,'sine',true); tone(c,fade,t,1.6,224,0.06,'sine',true); }); break;
+    case 'platform':  bed(160,900,0.26,true); every(2.0,(t)=>tone(c,fade,t,0.45,88,0.22,'sine',true)); break;
+    default:          bed(300,2000,0.2);
+  }
+  return true;
+}
+
+/* helper: a "next round" footer */
+function nextBar(host, label, fn){
+  const c = h(`<div class="controls"></div>`);
+  const b = h(`<button class="btn btn-green">${label}</button>`); b.onclick = fn; c.appendChild(b);
+  const g = h(`<button class="btn btn-ghost btn-sm">← All tasks</button>`); g.onclick = ()=>go('hub'); c.appendChild(g);
+  host.appendChild(c);
+}
+function qaPrompt(n){
+  return h(`<div class="banner">🎤 Now ${n} unprepared question${n>1?'s':''} from the group — defend the logic of your story</div>`);
+}
+
+/* =====================================================================
+   TASKS
+   ===================================================================== */
+const TASKS = [
+{
+ id:'emoji', ico:'🧩', name:'Emoji Story Sprint', nameRu:'Emoji Story Sprint',
+ sub:'sign-symbolic · visual', subRu:'знаково-символический · зрительный',
+ tag:'Five icons. No plot. Build one.', tagRu:'Пять опор. Сюжета нет. Соберите его.',
+ time:'5 s · 20 s · 2 min', timeRu:'5 с · 20 с · 2 мин',
+ skill:'Holding several unrelated cues in working memory; establishing links between distant concepts quickly; building a plot with no ready content plan; reacting to a clarifying question without preparation.',
+ skillRu:'Удержание в оперативной памяти нескольких не связанных между собой опор; быстрое установление смысловых связей между удалёнными понятиями; построение сюжета при отсутствии готового содержательного плана; реакция на уточняющий вопрос без подготовки.',
+ prompt:'Generate 10 sequences of 5 emoji for a task on spontaneous speech (level B2). Topics: business negotiations, travel, study situations. The emoji within one sequence must not add up to an obvious plot.',
+ promptRu:'Сгенерируй 10 последовательностей по 5 эмодзи для задания на развитие спонтанной речи (уровень B2). Тематика: деловые переговоры, поездки, учебные ситуации. Эмодзи внутри одной последовательности не должны складываться в очевидный сюжет.',
+ rules:['A sequence of five emoji appears on screen; there is no plot set between them.',
+        'The emoji stay on screen for 5 seconds, then the image is removed.',
+        'The student prepares for 20 seconds and delivers a two-minute monologue.',
+        'Every image must get a motivated place in the development of events; the order of presentation may not be changed.',
+        'The student answers two questions from the group.'],
+ rulesRu:['На экране предъявляется последовательность из пяти эмодзи, между которыми нет заданного сюжета.',
+        'Эмодзи держатся на экране 5 секунд, затем изображение убирается.',
+        'Студент готовится 20 секунд и произносит двухминутный монолог.',
+        'Каждое изображение должно получить мотивированное место в развитии событий; порядок предъявления менять нельзя.',
+        'Студент отвечает на два вопроса группы.'],
+ play(host){
+   const set = pickFramed(EMOJI_SETS);
+   const st = makeStage(host); st.timer(true);
+   st.label(t('memorise'),'hot');
+   st.set(`<div class="emoji-row">${set.v.map(e=>`<span>${e}</span>`).join('')}</div>`);
+   countdown(5,(l,x)=>st.tick(l,x,true),()=>{
+     st.label(t('thinking')); st.set(`<div class="hint">${t('blankOnPurpose')}</div>`);
+     countdown(20,(l,x)=>st.tick(l,x),()=>{
+       st.label(t('speaking'),'go');
+       st.set(`<div class="scene">${t('emojiSpeak')}</div>`);
+       st.add(markerStrip('narrate'));
+       countdown(120,(l,x)=>st.tick(l,x),()=>{
+         st.timer(false); st.label(t('overToGroup'),'hot');
+         st.set(qaPrompt(2));
+         st.add(`<div class="emoji-row" style="opacity:.75">${set.v.map(e=>`<span>${e}</span>`).join('')}</div>`);
+         host.appendChild(rubricPanel(()=>go('task',this)));
+       });
+     });
+   });
+ }
+},
+{
+ id:'words', ico:'💥', name:'Word Explosion', nameRu:'Word Explosion',
+ sub:'lexical · visual', subRu:'лексический · зрительный',
+ tag:'Five words that do not belong together.', tagRu:'Пять слов, не связанных между собой.',
+ time:'5 s · 90 s', timeRu:'5 с · 90 с',
+ skill:'Lexical flexibility and the shift of passive vocabulary into active use; joining semantically distant units in one utterance; planning a plot under time pressure.',
+ skillRu:'Лексическая гибкость и перевод пассивного словаря в активный; соединение семантически далёких единиц в одном высказывании; планирование сюжета при дефиците времени.',
+ prompt:'Compile 15 sets of 5 English nouns at level B2. The words within one set must not belong to the same thematic group and must not share a root.',
+ promptRu:'Составь 15 наборов по 5 английских существительных уровня B2. Слова внутри одного набора не должны относиться к одной тематической группе и не должны быть однокоренными.',
+ rules:['Five random words, thematically unrelated, are shown on screen for five seconds.',
+        'Once the words disappear, the student builds a connected story using all five lexical units.',
+        'The order in which the words are used is not set — the student works out the logic himself.',
+        'In the harder variant the order of presentation must be kept.',
+        'B1 groups are given three words instead of five, and the display time is raised to eight seconds.'],
+ rulesRu:['На экране в течение пяти секунд демонстрируются пять случайных слов, тематически между собой не связанных.',
+        'После того как слова исчезают, студент строит связный рассказ, употребив все пять лексических единиц.',
+        'Порядок употребления слов не задан — логику их появления студент выстраивает сам.',
+        'В усложнённом варианте требуется сохранить последовательность показа.',
+        'Группам уровня B1 даётся три слова вместо пяти, время показа увеличивается до восьми секунд.'],
+ play(host){
+   const opt = h(`<div class="sel" style="margin-bottom:18px">
+      <button data-l="B1">B1 · ${t('w3')}</button>
+      <button data-l="B2" class="on">B2 · ${t('w5')}</button>
+      <button data-hard>⚡ ${t('keepOrder')}</button></div>`);
+   host.appendChild(opt);
+   let level='B2', hard=false;
+   opt.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{
+     level=b.dataset.l; opt.querySelectorAll('[data-l]').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+   });
+   const hb = opt.querySelector('[data-hard]');
+   hb.onclick=()=>{ hard=!hard; hb.classList.toggle('on',hard); };
+   const box = h('<div></div>'); host.appendChild(box);
+   const start = h(`<div class="controls"><button class="btn btn-green">${t('showWords')} →</button>
+     <button class="btn btn-ghost btn-sm">← ${t('allTasks')}</button></div>`);
+   start.children[1].onclick=()=>go('hub');
+   host.appendChild(start);
+   start.children[0].onclick = ()=>{
+     start.remove(); opt.remove();
+     const set = pickFramed(level==='B1' ? WORDS_B1 : WORDS_B2);
+     const words = set.v, secs = level==='B1' ? 8 : 5;
+     const st = makeStage(box); st.timer(true);
+     st.label(hard? t('memoriseOrder') : t('memorise'),'hot');
+     st.set(`<div class="word-row">${words.map((w,i)=>`<span class="n${i+1}">${w}</span>`).join('')}</div>`);
+     countdown(secs,(l,x)=>st.tick(l,x,true),()=>{
+       st.label(t('speaking'),'go');
+       st.set(`<div class="scene">${t('allWords').replace('%n',words.length)}${hard?' <span class="em">'+t('inThatOrder')+'</span>':''}</div>`);
+       st.add(markerStrip('narrate'));
+       countdown(90,(l,x)=>st.tick(l,x),()=>{
+         st.timer(false); st.label(t('check'),'hot');
+         st.set(`<div class="word-row">${words.map((w,i)=>`<span class="n${i+1}">${w}</span>`).join('')}</div>`);
+         st.add(`<div class="hint">${t('wordsCheck')}</div>`);
+         box.appendChild(rubricPanel(()=>go('task',this)));
+       });
+     });
+   };
+ }
+},
+{
+ id:'photo', ico:'🎭', name:'One Photo — Three Stories', nameRu:'One Photo — Three Stories',
+ sub:'visual · role cards', subRu:'визуальный · зрительный',
+ tag:'Same scene. Different eyes.', tagRu:'Одна ситуация. Разные позиции.',
+ time:'15 s · 90 s', timeRu:'15 с · 90 с',
+ skill:'Shift of communicative stance within the same content; choice of register and evaluative lexis to match the role; telling fact from interpretation and evaluation; work with modality (allegedly, apparently, as far as I could see).',
+ skillRu:'Смена коммуникативной позиции в рамках одного содержания; выбор регистра и оценочной лексики под коммуникативную роль; различение факта, интерпретации и оценки; работа с модальностью (allegedly, apparently, as far as I could see).',
+ prompt:'Generate a photorealistic image of an airport departure hall at rush hour, landscape orientation. Separately compile 12 communicative roles for describing this situation, one line per role.',
+ promptRu:'Сгенерируй фотореалистичное изображение зала вылета аэропорта в час пик, горизонтальная ориентация. Отдельно составь 12 коммуникативных ролей для описания этой ситуации, по одной строке на роль.',
+ rules:['The student is given a photograph and then a random role.',
+        'The same situation has to be described from the position of the role received.',
+        'In the group the photograph stays common, while the roles handed out are different.',
+        'The students therefore hear several diverging versions of one event.',
+        'The versions differ above all in the selection of detail and in modality.'],
+ rulesRu:['Студент получает фотографию, а затем случайную роль.',
+        'Одну и ту же ситуацию нужно описать с позиции доставшейся роли.',
+        'В группе фотография остаётся общей, а роли раздаются разные.',
+        'Студенты слышат несколько несовпадающих версий одного события.',
+        'Версии расходятся прежде всего в отборе деталей и в модальности.'],
+ play(host){
+   const scene = pickFramed(SCENES);
+   const roles = shuffle(ROLES);
+   host.appendChild(h(`<div class="stage" style="min-height:0;margin-bottom:18px">
+       <div class="phase-label">${t('sceneAll')}</div>
+       <div style="font-size:46px">${scene.ico}</div>
+       <div class="scene">${scene.txt}</div></div>`));
+   const grid = h(`<div class="pickwrap"><h3>${t('chooseRole')}</h3>
+       <div class="ps">${t('tapCard')}</div>
+       <div class="pgrid" data-g></div></div>`);
+   host.appendChild(grid);
+   const g = grid.querySelector('[data-g]');
+   roles.forEach((r,i)=>{
+     const c = h(`<div class="pcard"><span class="n">${i+1}</span><span class="q">🎴</span><span class="t">${t('tapToPick')}</span></div>`);
+     c.onclick = ()=>showRole(r,c);
+     g.appendChild(c);
+   });
+   nextBar(host,'▶ '+t('startRound'),()=>{
+     host.innerHTML='';
+     host.appendChild(h(`<div class="stage" style="min-height:0;margin-bottom:16px">
+        <div style="font-size:40px">${scene.ico}</div><div class="scene">${scene.txt}</div></div>`));
+     const st = makeStage(host); st.timer(true);
+     st.label(t('stayInRole'),'go');
+     st.set(`<div class="hint">${t('roleHint')}</div>`);
+     st.add(markerStrip('stance'));
+     countdown(90,(l,x)=>st.tick(l,x),()=>{
+       st.timer(false); st.label(t('whoWasIt'),'hot');
+       st.set(`<div class="banner">🗳️ ${t('nameTheRole')}</div>`);
+       host.appendChild(rubricPanel(()=>go('task',TASKS[2])));
+     });
+   });
+   function showRole(r,card){
+     const ov = h(`<div class="stage" style="position:fixed;inset:14px;z-index:50;overflow:auto;
+        background:radial-gradient(700px 500px at 50% 0%,#332a5e,#1a1533);">
+        <div class="banner lock">🔒 ${t('onlyYou')}</div>
+        <div class="roleface">${r.ico}</div>
+        <div class="rolename serif">${L(r,'name')}</div>
+        <div class="hint" style="max-width:440px">${L(r,'line')}</div>
+        <div class="banner">💡 ${t('tryUse')} <b>“${pick(MARKERS.stance)}”</b></div>
+        <div class="phase-label" style="margin-top:6px">${t('thinking')}…</div>
+        <div class="bigtime" data-b>0:15</div>
+        <div class="bar" data-bar><i></i></div>
+        <div class="controls"><button class="btn btn-ghost btn-sm" data-x>${t('hideCard')} ✓</button></div>
+      </div>`);
+     document.body.appendChild(ov);
+     const stop = countdown(15,(l,x)=>{
+       ov.querySelector('[data-b]').textContent = mmss(l);
+       ov.querySelector('[data-bar] i').style.width = (l/x*100)+'%';
+     },()=>close());
+     ov.querySelector('[data-x]').onclick = ()=>{ stop(); close(); };
+     function close(){ ov.remove(); card.classList.add('taken');
+       card.querySelector('.t').textContent=t('taken'); card.querySelector('.q').textContent='✓'; }
+   }
+ }
+},
+{
+ id:'sound', ico:'🔊', name:'Mystery Sound', nameRu:'Mystery Sound',
+ sub:'auditory', subRu:'аудиальный · слуховой',
+ tag:'One sound. At least two truths.', tagRu:'Один звук. Минимум две версии.',
+ time:'5–10 s · 60 s', timeRu:'5–10 с · 60 с',
+ skill:'Probabilistic prediction and hypothesis; arguing for a version (I think it is … because I can hear …); modality of assumption (must be, might be, could have been); the move from monologue to a spontaneous exchange of remarks.',
+ skillRu:'Вероятностное прогнозирование и выдвижение гипотезы; аргументация версии (I think it is … because I can hear …); модальность предположения (must be, might be, could have been); переход от монолога к спонтанному обмену репликами.',
+ prompt:'Compile a list of 20 sound scenes lasting 5–10 seconds, each of which allows at least two equally probable versions of the setting. Give the possible interpretations for each scene.',
+ promptRu:'Составь список из 20 звуковых сцен длительностью 5—10 секунд, каждая из которых допускает не менее двух равновероятных версий места действия. Укажи для каждой сцены возможные интерпретации.',
+ rules:['The student listens to an audio fragment lasting 5–10 seconds with no visual accompaniment.',
+        'After listening he has to identify the setting and suggest who is present.',
+        'Then he describes what is happening and predicts how the situation will develop.',
+        'One and the same sound allows several equally probable interpretations.',
+        'The versions diverge, and the move from monologue to unprepared dialogue happens without any further instruction from the teacher.'],
+ rulesRu:['Студент прослушивает аудиофрагмент продолжительностью 5—10 секунд без визуального сопровождения.',
+        'После прослушивания требуется определить место действия и предположить участников.',
+        'Затем описать происходящее и спрогнозировать, как ситуация будет развиваться дальше.',
+        'Один и тот же звук допускает несколько равновероятных интерпретаций.',
+        'Версии студентов расходятся, и переход от монолога к неподготовленному диалогу происходит без дополнительной инструкции преподавателя.'],
+ play(host){
+   const sc = pickFramed(SOUNDS);
+   const st = makeStage(host);
+   st.label(t('listen'),'hot');
+   st.set('<div style="font-size:52px">🎧</div>');
+   st.add(`<div class="hint">${t('listenHint')}</div>`);
+   const ctr = h(`<div class="controls">
+      <button class="btn btn-green" data-p>▶ ${t('playSound')}</button>
+      <button class="btn btn-ghost btn-sm" data-again style="display:none">↻ ${t('onceMore')}</button>
+      <button class="btn btn-orange btn-sm" data-go style="display:none">${t('heardEnough')} →</button></div>`);
+   host.appendChild(ctr);
+   let plays = 0;
+   const play = ()=>{
+     const ok = playRecipe(sc.recipe, 8); plays++;
+     ctr.querySelector('[data-p]').style.display='none';
+     ctr.querySelector('[data-again]').style.display = plays<2?'inline-block':'none';
+     ctr.querySelector('[data-go]').style.display='inline-block';
+     if(!ok) st.add(`<div class="banner">🔇 ${t('soundBlocked')}</div>`);
+   };
+   ctr.querySelector('[data-p]').onclick = play;
+   ctr.querySelector('[data-again]').onclick = ()=>{ play(); ctr.querySelector('[data-again]').style.display='none'; };
+   ctr.querySelector('[data-go]').onclick = ()=>{
+     stopAudio(); ctr.remove(); st.timer(true); st.label(t('thinking'));
+     st.set(`<div class="hint">${t('soundFour')}</div>`);
+     countdown(10,(l,x)=>st.tick(l,x),()=>{
+       st.label(t('speaking'),'go');
+       st.set(`<div class="scene">${t('soundSpeak')}</div>`);
+       st.add(markerStrip('hedge'));
+       countdown(60,(l,x)=>st.tick(l,x),()=>{
+         st.timer(false); st.label(t('otherVersions'),'hot');
+         st.set(`<div class="hint" style="margin-bottom:4px">${t('equallyPossible')}</div>`);
+         st.add(`<div class="chips">${sc.guesses.map(x=>`<span class="chip g">${x}</span>`).join('')}</div>`);
+         st.add(`<div class="banner">💬 ${t('argueOut')}</div>`);
+         host.appendChild(rubricPanel(()=>go('task',TASKS[3])));
+       });
+     });
+   };
+ }
+},
+{
+ id:'switch', ico:'🔀', name:'Picture Switch', nameRu:'Picture Switch',
+ sub:'visual chain', subRu:'визуальный · зрительный',
+ tag:'The scene changes. You do not stop.', tagRu:'Кадр меняется. Рассказ не останавливается.',
+ time:'3–4 × 20 s', timeRu:'3–4 × 20 с',
+ skill:'Cognitive flexibility and switching without loss of coherence; command of inter-sentence cohesive devices; holding one storyline for 60–80 seconds.',
+ skillRu:'Когнитивная гибкость и переключение без потери связности; владение средствами межфразовой связи; удержание единой сюжетной линии на протяжении 60—80 секунд.',
+ prompt:'Select 5 chains of 3 images (described in words); there must be no obvious semantic link between neighbouring images in a chain.',
+ promptRu:'Подбери 5 цепочек по 3 изображения (описание словами), между соседними изображениями в цепочке не должно быть очевидной смысловой связи.',
+ rules:['Every 20 seconds the teacher changes the image.',
+        'The student carries on with the story, linking the new photograph to the previous one logically.',
+        'The main difficulty is motivating the transition, not describing the new image.',
+        'It is on the transitions that a stock of connectives is built up.',
+        'The optimal length of a chain is three or four images.'],
+ rulesRu:['Каждые 20 секунд преподаватель меняет изображение.',
+        'Студент продолжает рассказ, логично связывая новую фотографию с предыдущей.',
+        'Основная трудность состоит в мотивировке перехода, а не в описании нового изображения.',
+        'Именно на переходах формируется запас связок.',
+        'Оптимальная длина цепочки составляет три-четыре изображения.'],
+ play(host){
+   const chain = pickFramed(CHAINS).v;
+   const st = makeStage(host); st.timer(true);
+   const dots = h(`<div class="dots">${chain.map(()=>'<i></i>').join('')}</div>`);
+   let i = 0;
+   const show = ()=>{
+     st.label(i===0? t('frame1') : t('frameN').replace('%n',i+1),'go');
+     st.set(`<div style="font-size:60px;animation:pop .35s ease both">${chain[i].ico}</div>`);
+     st.add(`<div class="scene">${chain[i].t}</div>`);
+     st.add(dots);
+     dots.querySelectorAll('i').forEach((d,k)=>d.classList.toggle('on',k<=i));
+     if(i===0) st.add(markerStrip('connect'));
+     countdown(20,(l,x)=>st.tick(l,x,l<=5),()=>{
+       i++;
+       if(i<chain.length) show();
+       else{
+         st.timer(false); st.label(t('done'),'hot');
+         st.set(`<div class="banner">🔗 ${t('weakestTransition')}</div>`);
+         st.add(`<div class="chips">${LINKERS.map(x=>`<span class="chip g">${x}</span>`).join('')}</div>`);
+         host.appendChild(rubricPanel(()=>go('task',TASKS[4])));
+       }
+     });
+   };
+   show();
+ }
+},
+{
+ id:'twist', ico:'⚡', name:'Unexpected Ending', nameRu:'Unexpected Ending',
+ sub:'event cards', subRu:'ролевой и событийный · зрительный',
+ tag:'Your plan breaks. Keep talking.', tagRu:'План рушится. Рассказ продолжается.',
+ time:'3 min · 60 s', timeRu:'3 мин · 60 с',
+ skill:'Speed of production when the initial plan of the utterance collapses; tolerance of uncertainty and a lower fear of error; the lexis of a plot turn (suddenly, it turned out that, out of nowhere); keeping coherence through a forced change of topic.',
+ skillRu:'Скорость речепорождения при разрушении исходного плана высказывания; толерантность к неопределённости и снижение страха ошибки; лексика поворота сюжета (suddenly, it turned out that, out of nowhere); сохранение связности при вынужденной смене темы.',
+ prompt:'Compile 25 circumstance cards (one word or a short phrase in English), each of which is capable of sharply changing the course of any story.',
+ promptRu:'Составь 25 карточек-обстоятельств (одно слово или короткая фраза на английском), каждое из которых способно резко изменить ход любой истории.',
+ rules:['The student begins to tell a story.',
+        'After a minute the teacher shows a card.',
+        'The new circumstance has to be built into the plot already under way, immediately.',
+        'The ban on pausing is essential: the card is presented in silence and the story does not stop.',
+        'The task models the collapse of the initial speech plan, familiar from real negotiations.'],
+ rulesRu:['Студент начинает рассказывать историю.',
+        'Через минуту преподаватель показывает карточку.',
+        'Новое обстоятельство нужно немедленно встроить в уже развернувшийся сюжет.',
+        'Запрет на паузу принципиален: карточка предъявляется молча, рассказ не останавливается.',
+        'Задание моделирует сбой первоначального речевого плана, знакомый по реальным переговорам.'],
+ play(host){
+   const t1 = pick(TWISTS); let t2 = pick(TWISTS); while(t2===t1) t2 = pick(TWISTS);
+   const st = makeStage(host); st.timer(true);
+   const twistBox = h('<div style="width:100%"></div>');
+   st.label(t('speaking'),'go');
+   st.set(`<div class="scene">${t('anyStory')}</div>`);
+   st.add(twistBox); st.add(markerStrip('twist'));
+   const drop = (txt,n)=>{ twistBox.innerHTML=''; twistBox.appendChild(
+      h(`<div class="twist"><div class="lbl">${t('twist')} ${n}</div><div class="val serif">${txt}</div></div>`)); };
+   const ctr = h(`<div class="controls"><button class="btn btn-orange btn-sm" data-now>⚡ ${t('dropNow')}</button></div>`);
+   host.appendChild(ctr);
+   let dropped = 0;
+   ctr.querySelector('[data-now]').onclick = ()=>{ dropped++; drop(dropped===1?t1:t2, dropped); if(dropped>=2) ctr.remove(); };
+   countdown(180,(l,x)=>{
+     st.tick(l,x,l<=20);
+     if(l===120 && dropped===0){ dropped=1; drop(t1,1); }
+     if(l===60  && dropped===1){ dropped=2; drop(t2,2); ctr.remove(); }
+   },()=>{
+     st.timer(false); st.label(t('done'),'hot');
+     st.set(`<div class="banner">⏱️ ${t('pauseAfter')}</div>`);
+     host.appendChild(rubricPanel(()=>go('task',TASKS[5])));
+   });
+ }
+},
+{
+ id:'reverse', ico:'❓', name:'Reverse Interview', nameRu:'Reverse Interview',
+ sub:'answer cards', subRu:'ролевой и событийный · зрительный',
+ tag:'You have the answers. Find the questions.', tagRu:'Есть ответы. Восстановите вопросы.',
+ time:'40 s · 60 s', timeRu:'40 с · 60 с',
+ skill:'Question-and-answer interaction and initiative in dialogue; question grammar, including tag and indirect forms; matching the modality of the answer to the wording of the question.',
+ skillRu:'Вопросно-ответное взаимодействие и инициатива в диалоге; грамматика вопроса, включая разделительные и косвенные формы; соотнесение модальности ответа с формулировкой вопроса.',
+ prompt:'Compile 10 sets of 4 short English answers of varying certainty (from full agreement to evasive denial) for a task on reconstructing the questions.',
+ promptRu:'Составь 10 наборов по 4 коротких английских ответа разной степени уверенности (от полного согласия до уклончивого отрицания) для задания на восстановление вопросов.',
+ rules:['The student is given the answers only.',
+        'He has to think up the questions that could have preceded them.',
+        'A connected interview is then built out of the reconstructed questions.',
+        'The degree of certainty in a reply sets the frame of the question.',
+        'The student then interviews a fellow student who answers freely, and the prepared chain collapses at once.'],
+ rulesRu:['Студент получает только ответы.',
+        'Требуется придумать вопросы, которые могли бы им предшествовать.',
+        'Из восстановленных вопросов выстраивается связное интервью.',
+        'Степень уверенности в реплике задаёт рамку вопроса.',
+        'Затем студент проводит интервью с однокурсником, который отвечает свободно, и заготовленная цепочка сразу разрушается.'],
+ play(host){
+   const set = pick(ANSWER_SETS);
+   const st = makeStage(host); st.timer(true);
+   const cards = h(`<div class="answers">${set.map((a,i)=>
+      `<div class="acard"><div class="qn">${t('answer')} ${i+1}</div><div class="av">${a[0]}</div>
+       <div class="ah">↑ ${LANG==='ru'?a[2]:a[1]}</div></div>`).join('')}</div>`);
+   st.label(t('reconstruct'),'hot'); st.set(cards);
+   st.add(`<div class="hint">${t('fourQuestions')}</div>`);
+   countdown(40,(l,x)=>st.tick(l,x),()=>{
+     st.label(t('askAloud'),'go');
+     st.slot.innerHTML=''; st.add(cards);
+     st.add(markerStrip('repair'));
+     countdown(60,(l,x)=>st.tick(l,x),()=>{
+       st.timer(false); st.label(t('whatImplied'),'hot');
+       cards.querySelectorAll('.acard').forEach(c=>c.classList.add('revealed'));
+       st.slot.innerHTML=''; st.add(cards);
+       st.add(`<div class="banner">👥 ${t('nowClassmate')}</div>`);
+       host.appendChild(rubricPanel(()=>go('task',TASKS[6])));
+     });
+   });
+ }
+},
+{
+ id:'emotion', ico:'🎚️', name:'Emotion Shift', nameRu:'Emotion Shift',
+ sub:'emotion cards', subRu:'ролевой и событийный · зрительный',
+ tag:'Same facts. New delivery.', tagRu:'Факты те же. Подача другая.',
+ time:'4 × 25 s', timeRu:'4 × 25 с',
+ skill:'Pragmatics of the utterance and the fit between form and communicative intention; intonation and sentence stress; evaluative and expressive lexis; the non-verbal component of oral speech.',
+ skillRu:'Прагматика высказывания и соответствие формы коммуникативному намерению; интонационное оформление и фразовое ударение; оценочная и экспрессивная лексика; невербальная составляющая устного высказывания.',
+ prompt:'Compile 8 emotion cards for an oral task and give 5 English expressions and interjections at level B2 typical of that emotion for each.',
+ promptRu:'Составь 8 карточек эмоций для устного задания и для каждой дай по 5 английских выражений и междометий уровня B2, характерных для этой эмоции.',
+ rules:['The teacher shows emotion cards.',
+        'The student carries on with the story, changing the emotion.',
+        'The factual content of the story is kept; only its delivery changes.',
+        'The difference shows at the level of lexis, word order and intonation contour.',
+        'It is convenient to finish the task by listening back to the recording.'],
+ rulesRu:['Преподаватель показывает карточки эмоций.',
+        'Студент продолжает рассказ, меняя эмоцию.',
+        'Фактическое содержание истории сохраняется, меняется только её подача.',
+        'Разница видна на уровне лексики, порядка слов и интонационного контура.',
+        'Завершать задание удобно прослушиванием собственной записи.'],
+ play(host){
+   const seq = shuffle(EMOTIONS).slice(0,4);
+   const st = makeStage(host); st.timer(true);
+   const dots = h(`<div class="dots">${seq.map(()=>'<i></i>').join('')}</div>`);
+   let i=0;
+   const show = ()=>{
+     const e = seq[i];
+     st.label(t('emotionN').replace('%n',i+1),'go');
+     st.set(`<div style="font-size:56px;animation:pop .3s ease both">${e.ico}</div>`);
+     st.add(`<div class="rolename serif" style="color:${e.col}">${L(e,'name')}</div>`);
+     st.add(`<div class="hint">${t('sameFacts')}</div>`);
+     const chips = h(`<div class="chips"></div>`);
+     e.ph.forEach(ph=>{
+       const c=h(`<span class="chip o tap">“${ph}”</span>`);
+       c.onclick=()=>{ if(c.classList.contains('used'))return; c.classList.add('used'); markerHit(); };
+       chips.appendChild(c);
+     });
+     st.add(chips); st.add(dots);
+     dots.querySelectorAll('i').forEach((d,k)=>d.classList.toggle('on',k<=i));
+     countdown(25,(l,x)=>st.tick(l,x,l<=5),()=>{
+       i++;
+       if(i<seq.length) show();
+       else{
+         st.timer(false); st.label(t('done'),'hot');
+         st.set(`<div class="banner">🎧 ${t('playBack')}</div>`);
+         host.appendChild(rubricPanel(()=>go('task',TASKS[7])));
+       }
+     });
+   };
+   show();
+ }
+}
+];
+
+/* =====================================================================
+   ЯЗЫК ИНТЕРФЕЙСА · русские формулировки взяты из статьи дословно
+   ===================================================================== */
+let LANG = 'en';
+try{ const v = localStorage.getItem('tasklab.lang'); if(v==='ru'||v==='en') LANG=v; }catch(e){}
+function setLang(v){ LANG=v; try{ localStorage.setItem('tasklab.lang',v); }catch(e){} }
+function L(o, field){ const r=o[field+'Ru']; return (LANG==='ru' && r) ? r : o[field]; }
+function t(k){ const v=T[k]; return v ? (v[LANG]||v.en) : k; }
+const T = {
+ brand:{en:'Spontaneous Speaking', ru:'Спонтанная речь'},
+ labTitleA:{en:'Task', ru:'Комплекс'},  labTitleB:{en:'Lab', ru:'заданий'},
+ lead:{en:'Eight ways to make a student say something they had not planned to say.',
+       ru:'Восемь способов заставить студента сказать то, что он не планировал говорить.'},
+ meta:{en:'Stimulus is generated, not stored · B1–B2 · 5–7 minutes each',
+       ru:'Стимул порождается, а не хранится · B1—B2 · по 5—7 минут'},
+ surprise:{en:'🎲 Surprise me', ru:'🎲 Любое задание'},
+ footCriteria:{en:'Built on the stimulus typology and the four selection criteria: <b>semantic openness · no ready-made plot · cultural neutrality · lexical accessibility</b>.',
+   ru:'Построено на типологии стимулов и четырёх требованиях отбора: <b>семантическая открытость · отсутствие готового сюжета · культурная нейтральность · лексическая доступность</b>.'},
+ offline:{en:'<b>Offline file</b> — no internet, no VPN, no accounts.',
+          ru:'<b>Работает офлайн</b> — без интернета, VPN и регистрации.'},
+ theme:{en:'Topic frame', ru:'Тематическая рамка'},
+ anyTheme:{en:'Any', ru:'Любая'},
+ howToPlay:{en:'⚡ How to play', ru:'⚡ Порядок проведения'},
+ start:{en:'Start →', ru:'Начать →'},
+ allTasks:{en:'All tasks', ru:'Все задания'},
+ tasksShort:{en:'Tasks', ru:'Задания'},
+ develops:{en:'Develops', ru:'Что развивается'},
+ promptLabel:{en:'Prompt used to generate the stimuli', ru:'Запрос к модели'},
+ directLink:{en:'Direct link to this task', ru:'Прямая ссылка на это задание'},
+ /* фазы */
+ memorise:{en:'MEMORISE', ru:'ЗАПОМИНАЕМ'},
+ memoriseOrder:{en:'MEMORISE — ORDER MATTERS', ru:'ЗАПОМИНАЕМ — ВАЖЕН ПОРЯДОК'},
+ thinking:{en:'THINKING', ru:'ПОДГОТОВКА'},
+ speaking:{en:'SPEAKING', ru:'ГОВОРИМ'},
+ listen:{en:'LISTEN', ru:'СЛУШАЕМ'},
+ check:{en:'CHECK', ru:'ПРОВЕРКА'},
+ done:{en:'DONE', ru:'ГОТОВО'},
+ overToGroup:{en:'OVER TO THE GROUP', ru:'ВОПРОСЫ ГРУППЫ'},
+ otherVersions:{en:'OTHER VERSIONS', ru:'ДРУГИЕ ВЕРСИИ'},
+ reconstruct:{en:'RECONSTRUCT', ru:'ВОССТАНАВЛИВАЕМ ВОПРОСЫ'},
+ askAloud:{en:'ASK THEM ALOUD', ru:'ЗАДАЁМ ВСЛУХ'},
+ whatImplied:{en:'WHAT THE ANSWERS IMPLIED', ru:'ЧТО СТОЯЛО ЗА ОТВЕТАМИ'},
+ whoWasIt:{en:'WHO WAS IT?', ru:'ЧЬЯ ЭТО БЫЛА РОЛЬ?'},
+ stayInRole:{en:'SPEAKING — STAY IN ROLE', ru:'ГОВОРИМ — НЕ ВЫХОДЯ ИЗ РОЛИ'},
+ frame1:{en:'SPEAKING — FRAME 1', ru:'ГОВОРИМ — КАДР 1'},
+ frameN:{en:'FRAME %n — LINK IT', ru:'КАДР %n — СВЯЗАТЬ'},
+ emotionN:{en:'EMOTION %n OF 4', ru:'ЭМОЦИЯ %n ИЗ 4'},
+ sceneAll:{en:'THE SCENE — EVERYONE CAN SEE THIS', ru:'СИТУАЦИЯ — ОБЩАЯ ДЛЯ ВСЕХ'},
+ /* подсказки и кнопки */
+ blankOnPurpose:{en:'The screen is blank on purpose.<br>Sketch the first sentence — not the whole text.',
+                 ru:'Экран пуст намеренно.<br>Наметьте первое предложение, а не весь текст.'},
+ emojiSpeak:{en:'Two minutes. All five, in that order.', ru:'Две минуты. Все пять, в том же порядке.'},
+ w3:{en:'3 words / 8 s', ru:'3 слова / 8 с'},
+ w5:{en:'5 words / 5 s', ru:'5 слов / 5 с'},
+ keepOrder:{en:'Keep the order', ru:'Сохранить порядок'},
+ showWords:{en:'Show the words', ru:'Показать слова'},
+ allWords:{en:'All %n words. One story.', ru:'Все %n слов. Один рассказ.'},
+ inThatOrder:{en:'In that order.', ru:'В том же порядке.'},
+ wordsCheck:{en:'Did every word get in? Did any of them stay decoration?',
+             ru:'Все ли слова вошли? Не осталось ли какое-то украшением?'},
+ chooseRole:{en:'Choose Your Role', ru:'Выберите роль'},
+ tapCard:{en:'Tap a card — only you will see who is inside',
+          ru:'Нажмите на карточку — роль увидите только вы'},
+ tapToPick:{en:'tap to pick', ru:'взять'},
+ taken:{en:'taken', ru:'занято'},
+ startRound:{en:'Everyone has a role — start the round', ru:'Роли розданы — начать круг'},
+ roleHint:{en:'90 seconds. Do not name your role. Let the register give it away.',
+           ru:'90 секунд. Роль не называть — пусть её выдаст регистр.'},
+ nameTheRole:{en:'The group names the role. Was the register readable?',
+              ru:'Группа называет роль. Был ли регистр считываем?'},
+ onlyYou:{en:"Only YOU can see this screen. Don't show the others!",
+          ru:'Этот экран видите только ВЫ. Не показывайте другим!'},
+ tryUse:{en:'Try to use', ru:'Постарайтесь употребить'},
+ hideCard:{en:'Hide my card', ru:'Скрыть карточку'},
+ listenHint:{en:'Headphones or speakers on. Nothing to look at — that is the point.',
+             ru:'Включите звук. Смотреть не на что — в этом и смысл.'},
+ playSound:{en:'Play the sound', ru:'Воспроизвести звук'},
+ onceMore:{en:'Once more', ru:'Ещё раз'},
+ heardEnough:{en:"I've heard enough", ru:'Достаточно'},
+ soundBlocked:{en:'Sound is blocked in this window — play your own 5–10 s clip instead',
+               ru:'Звук в этом окне заблокирован — включите свой фрагмент на 5—10 секунд'},
+ soundFour:{en:'Setting · people · what is happening · what happens next',
+            ru:'Место действия · участники · что происходит · что будет дальше'},
+ soundSpeak:{en:'60 seconds. Say what you heard, then commit to a version.',
+             ru:'60 секунд. Скажите, что слышите, и выберите версию.'},
+ equallyPossible:{en:'Equally possible readings of this sound:',
+                  ru:'Равновероятные прочтения этого звука:'},
+ argueOut:{en:'Whoever disagrees, argue it out — no preparation, straight into dialogue',
+           ru:'Кто не согласен — спорьте. Без подготовки, сразу в диалог'},
+ weakestTransition:{en:'Which transition was the weakest? Say it again, better.',
+                    ru:'Какой переход вышел слабее всех? Повторите его лучше.'},
+ anyStory:{en:'Any story. Start now.', ru:'Любая история. Начинайте.'},
+ twist:{en:'Twist', ru:'Поворот'},
+ dropNow:{en:'Drop a twist now', ru:'Показать карточку сейчас'},
+ pauseAfter:{en:'How long was the pause after the card? Listen back if you recorded it.',
+             ru:'Сколько длилась пауза после карточки? Прослушайте запись.'},
+ answer:{en:'Answer', ru:'Ответ'},
+ fourQuestions:{en:'40 seconds. Four questions, in an order that holds together.',
+                ru:'40 секунд. Четыре вопроса, выстроенных в связное интервью.'},
+ nowClassmate:{en:'Now ask a classmate the same four questions. They answer freely — improvise from there.',
+               ru:'Теперь задайте те же вопросы однокурснику. Он отвечает свободно — дальше импровизация.'},
+ sameFacts:{en:'Same story. Same facts. Only the delivery changes.',
+            ru:'Та же история, те же факты. Меняется только подача.'},
+ playBack:{en:'Play the recording back. Did the pitch really move, or only the words?',
+           ru:'Прослушайте запись. Изменилась ли интонация или только слова?'},
+ /* оценивание и журнал */
+ markerHint:{en:'💡 Tap a marker when you hear it — the tally feeds the <b style="color:#fbbf24">discourse markers</b> score',
+             ru:'💡 Отмечайте маркер, когда услышите, — счёт идёт в параметр <b style="color:#fbbf24">дискурсивные маркеры</b>'},
+ rateTurn:{en:'⭑ Mark this turn — 1 to 5', ru:'⭑ Оценка выступления — от 1 до 5'},
+ whoSpeaking:{en:'Who was speaking? (optional)', ru:'Кто отвечал? (можно не заполнять)'},
+ finalMark:{en:'Final mark', ru:'Итоговый балл'},
+ setRows:{en:'set the four rows above', ru:'выставьте оценки по четырём параметрам'},
+ giveMark:{en:'give at least one row a mark first', ru:'сначала оцените хотя бы один параметр'},
+ isHighest:{en:'5 is the highest', ru:'5 — высший балл'},
+ saveJournal:{en:'Save to journal', ru:'В журнал'},
+ skip:{en:'Skip', ru:'Пропустить'},
+ heard:{en:'heard', ru:'отмечено'},
+ journal:{en:'Journal', ru:'Журнал'},
+ lessonJournal:{en:'Lesson journal', ru:'Журнал занятия'},
+ journalHint:{en:'Marks are kept until you clear them. Copy them into your own register.',
+              ru:'Баллы хранятся до очистки. Скопируйте их в свою ведомость.'},
+ nothingYet:{en:'Nothing marked yet.', ru:'Пока ничего не оценено.'},
+ colSpeaker:{en:'Speaker', ru:'Отвечал'}, colTask:{en:'Task', ru:'Задание'},
+ colMark:{en:'Mark', ru:'Балл'}, groupAverage:{en:'Group average', ru:'Средний балл'},
+ copyList:{en:'Copy the list', ru:'Скопировать список'},
+ clearAll:{en:'Clear', ru:'Очистить'}, close:{en:'Close', ru:'Закрыть'},
+ copied:{en:'Copied — paste it into your register.', ru:'Скопировано — вставьте в ведомость.'},
+ date:{en:'Date', ru:'Дата'}, time:{en:'Time', ru:'Время'},
+ copyBlocked:{en:'Copying is blocked here — select the table by hand.',
+              ru:'Копирование заблокировано — выделите таблицу вручную.'},
+ markWords:{en:['','very weak','weak','fair','good','excellent'],
+            ru:['','очень слабо','слабо','удовлетворительно','хорошо','отлично']}
+};
+const RUBRIC = [
+  {en:'Fluency',           ru:'Беглость',                note:'pace, pauses, restarts',                   noteRu:'темп, паузы, перезапуски'},
+  {en:'Coherence',         ru:'Связность',               note:'one storyline, motivated transitions',      noteRu:'одна сюжетная линия, мотивированные переходы'},
+  {en:'Lexical range',     ru:'Лексическое разнообразие',note:'variety, precision, no filler repetition',  noteRu:'разнообразие, точность, отсутствие повторов'},
+  {en:'Discourse markers', ru:'Дискурсивные маркеры',    note:'linking and hedging devices in use',        noteRu:'связки и средства хеджирования в речи'}
+];
+
+/* выбор стимула с учётом выбранной тематической рамки */
+function pickFramed(bank){
+  const f = S.frame;
+  if(f && f!=='any'){ const sub = bank.filter(x=>x.f===f); if(sub.length) return pick(sub); }
+  return pick(bank);
+}
+
+/* =====================================================================
+   ЭКРАНЫ
+   ===================================================================== */
+function topbar(){
+  return `<div class="topbar">
+    <div class="brand"><span class="sp">✦</span> ${t('brand')}</div>
+    <div class="spacer"></div>
+    <div class="langsw">
+      <button data-lang="ru" class="${LANG==='ru'?'on':''}">RU</button>
+      <button data-lang="en" class="${LANG==='en'?'on':''}">EN</button>
+    </div>
+    <button class="coinbox" data-journal>📋 ${t('journal')} · <span data-jn>${S.log.length}</span></button>
+  </div>`;
+}
+document.addEventListener('click', e=>{
+  const b = e.target.closest('[data-lang]');
+  if(b){ setLang(b.dataset.lang); routeFromHash(); }
+});
+
+function frameBar(){
+  const opts = ['any','N','T','S'].map(k=>{
+    const label = k==='any' ? t('anyTheme') : (LANG==='ru'?FRAMES[k].ru:FRAMES[k].en);
+    return `<button data-frame="${k}" class="${S.frame===k?'on':''}">${label}</button>`;
+  }).join('');
+  return `<div class="framebar"><span>${t('theme')}:</span><div class="sel">${opts}</div></div>`;
+}
+document.addEventListener('click', e=>{
+  const b = e.target.closest('[data-frame]');
+  if(b){ S.frame = b.dataset.frame; try{ localStorage.setItem('tasklab.frame',S.frame); }catch(err){} routeFromHash(); }
+});
+
+function renderHub(){
+  app.innerHTML = topbar() + `
+    <div class="hero">
+      <h1>${t('labTitleA')} <span class="accent">${t('labTitleB')}</span></h1>
+      <p class="lead">${t('lead')}</p>
+      <div class="meta">${t('meta')}</div>
+    </div>
+    ${frameBar()}
+    <div class="grid" id="grid"></div>
+    <div class="controls" style="margin-top:26px">
+      <button class="btn btn-orange btn-sm" id="rand">${t('surprise')}</button>
+    </div>
+    <div class="foot">
+      ${t('footCriteria')}<br>
+      Габдуллина А.Ш., Гончарова Н.А. — Генеративный искусственный интеллект как инструмент
+      проектирования коммуникативных заданий для развития спонтанной англоязычной речи студентов.<br>
+      ${t('offline')}
+    </div>`;
+  const g = document.getElementById('grid');
+  TASKS.forEach((task,i)=>{
+    const c = h(`<div class="tcard"><span class="num">0${i+1}</span>
+      <div class="ico">${task.ico}</div><h3>${L(task,'name')}</h3>
+      <div class="sub">${L(task,'sub')}</div>
+      <div class="skill">${L(task,'skill')}</div>
+      <div class="time">${L(task,'time')}</div></div>`);
+    c.onclick = ()=>go('intro',task);
+    g.appendChild(c);
+  });
+  document.getElementById('rand').onclick = ()=>go('intro',pick(TASKS));
+}
+
+function renderIntro(task){
+  const words = L(task,'name').split(' ');
+  app.innerHTML = topbar() + `
+    <div class="hero" style="padding-bottom:22px">
+      <div style="font-size:38px">${task.ico}</div>
+      <h1 style="font-size:clamp(26px,5vw,44px);margin-top:8px">${words.slice(0,-1).join(' ')}
+        <span class="accent">${words.slice(-1)}</span></h1>
+      <p class="lead">${L(task,'tag')}</p>
+    </div>
+    <div class="panel"><h4>${t('howToPlay')}</h4><ol class="steps" id="st"></ol></div>
+    <div class="panel" style="margin-top:16px">
+      <h4>◆ ${t('develops')}</h4>
+      <div style="color:var(--muted);font-size:14.4px;line-height:1.6">${L(task,'skill')}</div>
+      <h4 style="margin-top:20px">◆ ${t('promptLabel')}</h4>
+      <div class="promptbox">«${L(task,'prompt')}»</div>
+    </div>
+    <div class="controls" style="margin-top:26px">
+      <button class="btn btn-green" id="go">${t('start')}</button>
+      <button class="btn btn-ghost btn-sm" id="back">← ${t('allTasks')}</button>
+    </div>
+    <div class="foot" id="foot"></div>`;
+  if(location.protocol.indexOf('http')===0){
+    document.getElementById('foot').innerHTML =
+      `${t('directLink')}:<br><code style="color:#a78bfa;font-size:12px;word-break:break-all">${location.origin+location.pathname}#${task.id}</code>`;
+  }
+  const ol = document.getElementById('st');
+  L(task,'rules').forEach(r=>ol.appendChild(h(`<li>${r}</li>`)));
+  document.getElementById('go').onclick = ()=>go('task',task);
+  document.getElementById('back').onclick = ()=>go('hub');
+}
+
+function renderTask(task){
+  S.task = task.name; S.markers = 0;
+  app.innerHTML = topbar() + `
+    <div class="screen-head">
+      <button class="btn btn-ghost btn-xs" id="back">← ${t('tasksShort')}</button>
+      <div><h2>${task.ico} ${L(task,'name')}</h2>
+        <div class="tag">${L(task,'sub')} · ${L(task,'time')}</div></div>
+    </div>
+    <div class="wrap-narrow" id="host"></div>`;
+  document.getElementById('back').onclick = ()=>go('hub');
+  task.play(document.getElementById('host'));
+}
+
+/* --- адрес страницы: /  — все задания,  /#emoji — сразу нужное --- */
+let HASHLOCK = false;
+function setHash(v){
+  if((location.hash||'') === v) return;
+  HASHLOCK = true; location.hash = v;
+  setTimeout(()=>{ HASHLOCK = false; }, 0);
+}
+function taskByHash(){
+  const id = (location.hash||'').replace(/^#/,'').trim().toLowerCase();
+  return TASKS.find(x=>x.id===id) || null;
+}
+function routeFromHash(){
+  const task = taskByHash();
+  if(task) go('intro', task, true); else go('hub', null, true);
+}
+window.addEventListener('hashchange', ()=>{ if(!HASHLOCK) routeFromHash(); });
+
+function go(screen, arg, silent){
+  clearTimers();
+  document.querySelectorAll('.stage[style*="fixed"]').forEach(e=>e.remove());
+  refreshJournal();
+  window.scrollTo(0,0);
+  if(!silent) setHash(screen==='hub' ? '' : '#'+arg.id);
+  if(screen==='hub')   return renderHub();
+  if(screen==='intro') return renderIntro(arg);
+  if(screen==='task')  return renderTask(arg);
+}
+try{ const f=localStorage.getItem('tasklab.frame'); if(f) S.frame=f; }catch(e){}
+routeFromHash();
+</script>
+</body>
+</html>
